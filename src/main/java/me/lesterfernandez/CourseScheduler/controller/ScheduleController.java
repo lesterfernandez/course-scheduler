@@ -1,8 +1,8 @@
 package me.lesterfernandez.CourseScheduler.controller;
 
+import java.util.Optional;
 import me.lesterfernandez.CourseScheduler.entity.Schedule;
 import me.lesterfernandez.CourseScheduler.service.ScheduleService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -14,17 +14,21 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/schedules")
 public class ScheduleController {
 
-  @Autowired
-  private ScheduleService scheduleService;
+  private final ScheduleService scheduleService;
 
-  @GetMapping("{userId}")
-  private String getUserSchedule(@PathVariable long userId) {
-    return Long.toString(userId);
+  public ScheduleController(ScheduleService scheduleService) {
+    this.scheduleService = scheduleService;
   }
 
-  @PostMapping("")
-  private String setUserSchedule(@RequestBody Schedule schedule) {
-    return Integer.toString(schedule.getScheduleCourses().size());
+  @GetMapping("/{scheduleId}")
+  private Schedule getUserSchedule(@PathVariable long scheduleId) {
+    Optional<Schedule> userSchedule = scheduleService.getUserSchedule(scheduleId);
+    return userSchedule.orElse(null);
+  }
+
+  @PostMapping
+  private void setUserSchedule(@RequestBody Schedule schedule) {
+    scheduleService.setUserSchedule(schedule);
   }
 
 }

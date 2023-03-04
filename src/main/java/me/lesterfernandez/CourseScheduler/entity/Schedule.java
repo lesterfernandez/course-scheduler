@@ -1,27 +1,42 @@
 package me.lesterfernandez.CourseScheduler.entity;
 
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.OneToMany;
 import java.util.List;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.NonNull;
+import lombok.Setter;
 
 @Entity
+@AllArgsConstructor
 public class Schedule {
 
   @Id
-  @GeneratedValue(strategy = GenerationType.AUTO)
+  @GeneratedValue(strategy = GenerationType.SEQUENCE)
   private Long id;
-  private String description;
-  @OneToMany
+
+  @NonNull
+  @Getter
+  @Setter
+  private int workload;
+
+  @NonNull
+  @Getter
+  @Setter
+  @OneToMany(cascade = CascadeType.ALL)
   private List<Course> courses;
 
-  public String getDescription() {
-    return description;
+  public Schedule(int workload, List<Course> courses) {
+    this.workload = workload;
+    this.courses = courses;
   }
 
-  public List<Course> getScheduleCourses() {
-    return courses;
+  protected Schedule() {
   }
 }
