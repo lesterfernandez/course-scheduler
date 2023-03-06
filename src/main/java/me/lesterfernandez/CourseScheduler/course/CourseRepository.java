@@ -1,7 +1,5 @@
-package me.lesterfernandez.CourseScheduler.repository;
+package me.lesterfernandez.CourseScheduler.course;
 
-import me.lesterfernandez.CourseScheduler.entity.Course;
-import me.lesterfernandez.CourseScheduler.entity.Schedule;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.stereotype.Repository;
 

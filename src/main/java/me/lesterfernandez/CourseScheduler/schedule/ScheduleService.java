@@ -1,10 +1,8 @@
-package me.lesterfernandez.CourseScheduler.service;
+package me.lesterfernandez.CourseScheduler.schedule;
 
 import java.util.List;
 import java.util.Optional;
-import me.lesterfernandez.CourseScheduler.entity.Course;
-import me.lesterfernandez.CourseScheduler.entity.Schedule;
-import me.lesterfernandez.CourseScheduler.repository.ScheduleRepository;
+import me.lesterfernandez.CourseScheduler.course.Course;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 

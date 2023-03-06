@@ -1,4 +1,4 @@
-package me.lesterfernandez.CourseScheduler.entity;
+package me.lesterfernandez.CourseScheduler.schedule;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
@@ -9,9 +9,9 @@ import jakarta.persistence.OneToMany;
 import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 import lombok.NonNull;
 import lombok.Setter;
+import me.lesterfernandez.CourseScheduler.course.Course;
 
 @Entity
 @AllArgsConstructor
