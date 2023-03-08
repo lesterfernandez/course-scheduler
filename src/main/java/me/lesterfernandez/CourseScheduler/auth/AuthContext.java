@@ -15,9 +15,10 @@ import org.springframework.stereotype.Component;
 @Component
 public class AuthContext {
 
-  public boolean authorized;
-  public ResponseEntity<String> authorizationFailedResponse = new ResponseEntity<>("Unauthorized",
+  public static final ResponseEntity<String> authorizationFailedResponse = new ResponseEntity<>(
+      "Unauthorized",
       HttpStatus.UNAUTHORIZED);
+  public boolean authorized;
   @Autowired
   private JwtComponent jwtComponent;
   @Getter
@@ -27,9 +28,10 @@ public class AuthContext {
   @Setter
   private String token;
 
-  public boolean authorize(HttpServletRequest request, HttpServletResponse response) {
+  public void authorize(HttpServletRequest request, HttpServletResponse response) {
     if (request.getCookies() == null) {
-      return false;
+      this.authorized = false;
+      return;
     }
 
     Optional<Cookie> jwtOpt = Arrays.stream(request.getCookies())
@@ -37,13 +39,14 @@ public class AuthContext {
         .findAny();
 
     if (jwtOpt.isEmpty()) {
-      return false;
+      this.authorized = false;
+      return;
     }
 
     String token = jwtOpt.get().getValue();
     authorized = jwtComponent.validateToken(token);
     this.username = jwtComponent.getUsernameFromToken(token);
     this.token = token;
-    return authorized;
+    this.authorized = true;
   }
 }

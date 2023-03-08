@@ -1,7 +1,5 @@
 package me.lesterfernandez.CourseScheduler.schedule;
 
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
 import java.util.Optional;
 import me.lesterfernandez.CourseScheduler.auth.AuthContext;
 import me.lesterfernandez.CourseScheduler.user.UserEntity;
@@ -28,31 +26,16 @@ public class ScheduleController {
   private UserService userService;
 
   @GetMapping("/{scheduleId}")
-  private ResponseEntity<?> getUserSchedule(
-      @PathVariable long scheduleId,
-      HttpServletRequest req,
-      HttpServletResponse res
-  ) {
-    if (!authContext.authorize(req, res)) {
-      return authContext.authorizationFailedResponse;
-    }
-
+  private ResponseEntity<?> getUserSchedule(@PathVariable long scheduleId) {
     Optional<Schedule> userSchedule = scheduleService.getUserSchedule(scheduleId);
     return new ResponseEntity<>(userSchedule.orElse(null), HttpStatus.OK);
   }
 
   @PostMapping
-  private ResponseEntity<?> setUserSchedule(
-      @RequestBody Schedule schedule,
-      HttpServletRequest req,
-      HttpServletResponse res
-  ) {
-    if (!authContext.authorize(req, res)) {
-      return authContext.authorizationFailedResponse;
-    }
+  private ResponseEntity<?> setUserSchedule(@RequestBody Schedule schedule) {
     UserEntity user = userService.findByUsername(authContext.getUsername());
     if (user == null) {
-      return authContext.authorizationFailedResponse;
+      return AuthContext.authorizationFailedResponse;
     }
     schedule.setUser(user);
     scheduleService.setUserSchedule(schedule);
