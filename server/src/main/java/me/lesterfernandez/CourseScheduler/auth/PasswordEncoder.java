@@ -1,7 +1,7 @@
 package me.lesterfernandez.CourseScheduler.auth;
 
-import at.favre.lib.crypto.bcrypt.BCrypt;
 import org.springframework.stereotype.Component;
+import at.favre.lib.crypto.bcrypt.BCrypt;
 
 @Component
 public class PasswordEncoder {

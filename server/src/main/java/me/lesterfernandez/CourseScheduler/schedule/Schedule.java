@@ -1,5 +1,6 @@
 package me.lesterfernandez.CourseScheduler.schedule;
 
+import java.util.List;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
@@ -8,7 +9,6 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.OneToOne;
-import java.util.List;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.Setter;
@@ -22,7 +22,6 @@ public class Schedule {
   @GeneratedValue(strategy = GenerationType.SEQUENCE)
   private Long id;
 
-  @NonNull
   @Getter
   @Setter
   private int workload;
@@ -46,8 +45,7 @@ public class Schedule {
     this.user = user;
   }
 
-  protected Schedule() {
-  }
+  protected Schedule() {}
 
   public Schedule(int workload, List<Course> courses) {
     this.workload = workload;

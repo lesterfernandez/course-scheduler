@@ -1,21 +1,21 @@
 package me.lesterfernandez.CourseScheduler.auth;
 
-import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.security.Keys;
 import java.nio.charset.StandardCharsets;
 import java.util.Date;
 import javax.crypto.SecretKey;
-import me.lesterfernandez.CourseScheduler.user.UserEntity;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.security.Keys;
+import me.lesterfernandez.CourseScheduler.user.UserEntity;
 
 @Component
 public class JwtComponent {
 
   public static final long JWT_TOKEN_VALIDITY = 60 * 60 * 24;
-  private final static SecretKey JWT_SECRET = Keys.hmacShaKeyFor(
-      "secret............................".getBytes(StandardCharsets.UTF_8));
+  private final static SecretKey JWT_SECRET =
+      Keys.hmacShaKeyFor("secret............................".getBytes(StandardCharsets.UTF_8));
 
   public String getUsernameFromToken(String token) {
     return getTokenClaims(token).getSubject();
@@ -26,12 +26,7 @@ public class JwtComponent {
   }
 
   private Claims getTokenClaims(String token) {
-    return Jwts
-        .parserBuilder()
-        .setSigningKey(JWT_SECRET)
-        .build()
-        .parseClaimsJws(token)
-        .getBody();
+    return Jwts.parserBuilder().setSigningKey(JWT_SECRET).build().parseClaimsJws(token).getBody();
   }
 
   private boolean isTokenExpired(String token) {
@@ -44,12 +39,9 @@ public class JwtComponent {
   }
 
   public String generateToken(String username) {
-    return Jwts.builder()
-        .setSubject(username)
-        .setIssuedAt(new Date(System.currentTimeMillis()))
+    return Jwts.builder().setSubject(username).setIssuedAt(new Date(System.currentTimeMillis()))
         .setExpiration(new Date(System.currentTimeMillis() + JWT_TOKEN_VALIDITY * 1000))
-        .signWith(JWT_SECRET)
-        .compact();
+        .signWith(JWT_SECRET).compact();
   }
 
   public boolean validateToken(String token, UserEntity userEntity) {
@@ -58,8 +50,8 @@ public class JwtComponent {
     }
 
     final String username = getUsernameFromToken(token);
-    return (userEntity != null && username.equals(userEntity.getUsername()) && !isTokenExpired(
-        token));
+    return (userEntity != null && username.equals(userEntity.getUsername())
+        && !isTokenExpired(token));
   }
 
   public boolean validateToken(String token) {

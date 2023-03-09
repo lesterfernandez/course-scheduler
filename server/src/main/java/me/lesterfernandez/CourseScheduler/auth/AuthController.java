@@ -1,11 +1,6 @@
 package me.lesterfernandez.CourseScheduler.auth;
 
-import ch.qos.logback.core.util.Duration;
 import java.util.Arrays;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import me.lesterfernandez.CourseScheduler.user.UserEntity;
-import me.lesterfernandez.CourseScheduler.user.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -15,6 +10,11 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import ch.qos.logback.core.util.Duration;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import me.lesterfernandez.CourseScheduler.user.UserEntity;
+import me.lesterfernandez.CourseScheduler.user.UserService;
 
 @RestController
 @RequestMapping("/api/auth")
@@ -41,14 +41,10 @@ public class AuthController {
 
       String token = jwtComponent.generateToken(user.getUsername());
 
-      ResponseCookie cookie = ResponseCookie.from("jwt", token)
-          .domain("localhost")
-          .path("/")
-          .maxAge(Duration.buildByDays(365).getMilliseconds())
-          .build();
+      ResponseCookie cookie = ResponseCookie.from("jwt", token).domain("localhost").path("/")
+          .maxAge(Duration.buildByDays(365).getMilliseconds()).build();
 
-      return ResponseEntity.ok()
-          .header(HttpHeaders.SET_COOKIE, cookie.toString())
+      return ResponseEntity.ok().header(HttpHeaders.SET_COOKIE, cookie.toString())
           .body(new AuthResultDto(true, loginDto.getUsername()));
     } catch (Exception e) {
       System.out.println(Arrays.toString(e.getStackTrace()));
@@ -64,14 +60,10 @@ public class AuthController {
       UserEntity user = userService.findByUsername(loginDto.getUsername());
       String token = jwtComponent.generateToken(user);
 
-      ResponseCookie cookie = ResponseCookie.from("jwt", token)
-          .domain("localhost")
-          .path("/")
-          .maxAge(Duration.buildByDays(365).getMilliseconds())
-          .build();
+      ResponseCookie cookie = ResponseCookie.from("jwt", token).domain("localhost").path("/")
+          .maxAge(Duration.buildByDays(365).getMilliseconds()).build();
 
-      return ResponseEntity.ok()
-          .header(HttpHeaders.SET_COOKIE, cookie.toString())
+      return ResponseEntity.ok().header(HttpHeaders.SET_COOKIE, cookie.toString())
           .body(new AuthResultDto(true, loginDto.getUsername()));
     } catch (Exception e) {
       System.out.println(Arrays.toString(e.getStackTrace()));

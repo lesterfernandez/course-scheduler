@@ -2,9 +2,9 @@ package me.lesterfernandez.CourseScheduler.schedule;
 
 import java.util.List;
 import java.util.Optional;
-import me.lesterfernandez.CourseScheduler.course.Course;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import me.lesterfernandez.CourseScheduler.course.Course;
 
 @Service
 public class ScheduleService {
