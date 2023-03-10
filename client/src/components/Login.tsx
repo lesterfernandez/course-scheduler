@@ -1,3 +1,4 @@
+import { ArrowBackIcon } from "@chakra-ui/icons";
 import {
   Box,
   Button,
@@ -13,7 +14,7 @@ import {
 import { useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
-function SignUp() {
+function Login() {
   const [showPassword, setShowPassword] = useState(false);
   const toggleShowPassword = () => setShowPassword(!showPassword);
   const passwordRef = useRef<HTMLInputElement>(null);
@@ -35,7 +36,7 @@ function SignUp() {
       justify="center"
       gap="1rem"
     >
-      <Heading>Sign Up</Heading>
+      <Heading>Login</Heading>
       <FormControl>
         <FormLabel>Username</FormLabel>
         <Input autoComplete="false" />
@@ -65,13 +66,18 @@ function SignUp() {
       <Box>
         <ButtonGroup mt="5">
           <Button colorScheme="blue" type="submit">
+            Login
+          </Button>
+          <Button
+            leftIcon={<ArrowBackIcon />}
+            onClick={() => void navigate("/signup")}
+          >
             Sign Up
           </Button>
-          <Button onClick={() => void navigate("/login")}>Log In</Button>
         </ButtonGroup>
       </Box>
     </VStack>
   );
 }
 
-export default SignUp;
+export default Login;
