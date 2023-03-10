@@ -31,3 +31,14 @@ build/
 
 ### VS Code ###
 .vscode/
+
+node_modules
+
+# Yarn 
+.pnp.*
+.yarn
+!.yarn/patches
+!.yarn/plugins
+!.yarn/releases
+!.yarn/sdks
+!.yarn/versions

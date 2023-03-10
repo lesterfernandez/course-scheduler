@@ -1,0 +1,100 @@
+module.exports = {
+  root: true,
+  extends: ["eslint:recommended", "airbnb-base", "prettier"],
+  plugins: ["react-hooks", "simple-import-sort", "import"],
+  rules: {
+    semi: 2,
+    "prefer-template": "off",
+    "no-console": "off",
+    "no-undef": "off",
+    "no-plusplus": "off",
+    camelcase: "off",
+    "import/no-extraneous-dependencies": "off",
+    "import/prefer-default-export": "off",
+    "no-use-before-define": "off",
+    "simple-import-sort/imports": "error",
+    "simple-import-sort/exports": "error",
+    "import/first": "error",
+    "import/newline-after-import": "error",
+    "import/no-duplicates": "error",
+    "import/extensions": [
+      "error",
+      "ignorePackages",
+      {
+        js: "never",
+        jsx: "never",
+        ts: "never",
+        tsx: "never",
+      },
+    ],
+  },
+  settings: {
+    "import/resolver": {
+      node: {
+        extensions: [".js", ".jsx", ".ts", ".tsx"],
+      },
+    },
+  },
+  overrides: [
+    {
+      files: ["*.ts", "*.tsx"],
+      extends: [
+        "eslint:recommended",
+        "plugin:@typescript-eslint/recommended",
+        "airbnb-base",
+        "airbnb-typescript/base",
+        "prettier",
+      ],
+      plugins: [
+        "@typescript-eslint",
+        "react-hooks",
+        "simple-import-sort",
+        "import",
+      ],
+      parser: "@typescript-eslint/parser",
+      parserOptions: {
+        tsconfigRootDir: __dirname,
+        ecmaVersion: "latest",
+        project: ["./tsconfig.json"],
+        warnOnUnsupportedTypeScriptVersion: true,
+      },
+      rules: {
+        semi: 2,
+        "prefer-template": "off",
+        "no-console": "off",
+        "no-undef": "off",
+        "no-plusplus": "off",
+        camelcase: "off",
+        "import/no-extraneous-dependencies": "off",
+        "import/prefer-default-export": "off",
+        "no-use-before-define": "off",
+        "default-case": "off",
+        "@typescript-eslint/switch-exhaustiveness-check": "error",
+        "@typescript-eslint/no-use-before-define": "off",
+        "@typescript-eslint/no-var-requires": 0,
+        "simple-import-sort/imports": "error",
+        "simple-import-sort/exports": "error",
+        "import/first": "error",
+        "import/newline-after-import": "error",
+        "import/no-duplicates": "error",
+        "import/extensions": [
+          "error",
+          "ignorePackages",
+          {
+            js: "never",
+            jsx: "never",
+            ts: "never",
+            tsx: "never",
+          },
+        ],
+      },
+      settings: {
+        "import/resolver": {
+          node: {
+            extensions: [".js", ".jsx", ".ts", ".tsx"],
+          },
+        },
+      },
+    },
+  ],
+};
