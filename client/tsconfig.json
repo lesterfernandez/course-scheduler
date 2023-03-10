@@ -16,6 +16,8 @@
     "noUnusedLocals": true,
     "noUnusedParameters": true,
     "noFallthroughCasesInSwitch": true,
+    "noImplicitAny": true,
+    "noImplicitOverride": true,
     "sourceMap": true,
     "forceConsistentCasingInFileNames": true,
     "module": "ESNext",
