@@ -22,9 +22,10 @@ function Login() {
 
   const focusOnPasswordField = () => {
     setTimeout(() => {
-      passwordRef.current!.focus();
-      const inputLength = passwordRef.current!.value.length;
-      passwordRef.current!.setSelectionRange(inputLength, inputLength);
+      if (!passwordRef.current) return;
+      passwordRef.current.focus();
+      const inputLength = passwordRef.current.value.length;
+      passwordRef.current.setSelectionRange(inputLength, inputLength);
     }, 0);
   };
 

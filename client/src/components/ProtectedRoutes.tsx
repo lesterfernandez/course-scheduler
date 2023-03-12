@@ -15,7 +15,7 @@ export default function ProtectedRoutes() {
         setLoading(false);
       })
       .catch(console.log);
-  }, []);
+  }, [setAuthCtx]);
 
   if (loading) {
     return (

@@ -13,7 +13,7 @@ const ColorSwitch = () => {
       aria-label="Button to toggle the color mode"
       onClick={toggleColorMode}
       icon={
-        colorMode == "light" ? (
+        colorMode === "light" ? (
           <MoonIcon color="blue.700" />
         ) : (
           <SunIcon color="orange.200" />
