@@ -9,15 +9,18 @@ export default function ProtectedRoutes() {
   const { authCtx, setAuthCtx } = useContext(AuthContext);
 
   useEffect(() => {
+    console.log("effect", JSON.stringify(authCtx));
+    if (authCtx.loggedIn) return;
     authenticate()
       .then(data => {
+        if (authCtx.loggedIn) return;
         setAuthCtx(data);
         setLoading(false);
       })
       .catch(console.log);
-  }, [setAuthCtx]);
+  }, [authCtx, setAuthCtx]);
 
-  if (loading) {
+  if (loading && !authCtx.loggedIn) {
     return (
       <Center h="100vh">
         <Spinner size="xl" speed="0.65s" variant="" color="blue.200" />

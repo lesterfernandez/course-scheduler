@@ -31,7 +31,7 @@ public class AuthController {
     try {
       if (userService.existsByUsername(loginDto.getUsername())) {
         System.out.println("username taken!");
-        throw new IllegalArgumentException("Username taken");
+        return new ResponseEntity<>(new InvalidRequestDto("Username taken"), HttpStatus.CONFLICT);
       }
 
       UserEntity user = new UserEntity(loginDto.getUsername(), loginDto.getPassword());
@@ -77,5 +77,11 @@ public class AuthController {
 
     private boolean loggedIn;
     private String username;
+  }
+
+  @Data
+  @AllArgsConstructor
+  private class InvalidRequestDto {
+    private String errorMessage;
   }
 }

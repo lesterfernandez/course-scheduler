@@ -5,17 +5,24 @@ import {
   type Dispatch,
   type SetStateAction,
 } from "react";
+import { z } from "zod";
 
-type Context = {
-  authCtx: {
-    loggedIn: boolean;
-  };
-  setAuthCtx: Dispatch<SetStateAction<Context["authCtx"]>>;
-};
+export const AuthContextValueSchema = z.object({
+  loggedIn: z.boolean(),
+  username: z.string(),
+});
 
-const initialValue: Context["authCtx"] = {
+export type AuthContextValue = z.infer<typeof AuthContextValueSchema>;
+
+const initialValue: AuthContextValue = {
   loggedIn: false,
+  username: "",
 };
+
+interface Context {
+  authCtx: AuthContextValue;
+  setAuthCtx: Dispatch<SetStateAction<AuthContextValue>>;
+}
 
 export const AuthContext = createContext({} as Context);
 
