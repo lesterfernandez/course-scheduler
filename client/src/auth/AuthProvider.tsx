@@ -10,6 +10,7 @@ import { z } from "zod";
 export const AuthContextValueSchema = z.object({
   loggedIn: z.boolean(),
   username: z.string(),
+  token: z.string(),
 });
 
 export type AuthContextValue = z.infer<typeof AuthContextValueSchema>;
@@ -17,6 +18,7 @@ export type AuthContextValue = z.infer<typeof AuthContextValueSchema>;
 const initialValue: AuthContextValue = {
   loggedIn: false,
   username: "",
+  token: localStorage.getItem("token") || "",
 };
 
 interface Context {

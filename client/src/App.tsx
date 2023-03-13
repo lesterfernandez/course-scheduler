@@ -4,12 +4,12 @@ import {
   Route,
   RouterProvider,
 } from "react-router-dom";
+import AuthProvider from "./auth/AuthProvider";
+import Login from "./auth/Login";
+import ProtectedRoutes from "./auth/ProtectedRoutes";
+import SignUp from "./auth/SignUp";
 import ColorSwitch from "./components/ColorSwitch";
-import Login from "./components/Login";
-import ProtectedRoutes from "./components/ProtectedRoutes";
 import Root from "./components/Root";
-import SignUp from "./components/SignUp";
-import AuthProvider from "./context/AuthContext";
 
 const browserRouter = createBrowserRouter(
   createRoutesFromElements(

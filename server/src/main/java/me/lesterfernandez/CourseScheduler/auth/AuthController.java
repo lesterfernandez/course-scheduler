@@ -2,14 +2,14 @@ package me.lesterfernandez.CourseScheduler.auth;
 
 import java.util.Arrays;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import me.lesterfernandez.CourseScheduler.user.UserEntity;
@@ -21,10 +21,15 @@ public class AuthController {
 
   @Autowired
   private JwtComponent jwtComponent;
+
   @Autowired
   private UserService userService;
+
   @Autowired
   private PasswordEncoder passwordEncoder;
+
+  @Autowired
+  private AuthContext authContext;
 
   @PostMapping("/register")
   public ResponseEntity<?> register(@RequestBody LoginDto loginDto) {
@@ -39,12 +44,7 @@ public class AuthController {
       userService.save(user);
 
       String token = jwtComponent.generateToken(user.getUsername());
-
-      ResponseCookie cookie = ResponseCookie.from("jwt", token).domain("localhost").path("/")
-          .maxAge(1000 * 60 * 60 * 24 * 14).build();
-
-      return ResponseEntity.ok().header(HttpHeaders.SET_COOKIE, cookie.toString())
-          .body(new AuthResultDto(true, loginDto.getUsername()));
+      return ResponseEntity.ok().body(new AuthResultDto(true, loginDto.getUsername(), token));
     } catch (Exception e) {
       System.out.println(Arrays.toString(e.getStackTrace()));
       System.out.println(e.getMessage());
@@ -53,17 +53,29 @@ public class AuthController {
     }
   }
 
+  @GetMapping("/login")
+  public ResponseEntity<?> implicitLogin(HttpServletRequest req) {
+    try {
+      authContext.authorize(req);
+      if (authContext.authorized && authContext.getUsername() != null) {
+        return ResponseEntity.ok()
+            .body(new AuthResultDto(true, authContext.getUsername(), authContext.getToken()));
+      }
+    } catch (Exception e) {
+      System.out.println(Arrays.toString(e.getStackTrace()));
+      System.out.println(e.getMessage());
+      return ResponseEntity.internalServerError()
+          .body(new InvalidRequestDto("Something went wrong!"));
+    }
+    return AuthContext.authorizationFailedResponse;
+  }
+
   @PostMapping("/login")
   public ResponseEntity<?> login(@RequestBody LoginDto loginDto) {
     try {
       UserEntity user = userService.findByUsername(loginDto.getUsername());
       String token = jwtComponent.generateToken(user);
-
-      ResponseCookie cookie = ResponseCookie.from("jwt", token).domain("localhost").path("/")
-          .maxAge(1000 * 60 * 60 * 24 * 14).build();
-
-      return ResponseEntity.ok().header(HttpHeaders.SET_COOKIE, cookie.toString())
-          .body(new AuthResultDto(true, loginDto.getUsername()));
+      return ResponseEntity.ok().body(new AuthResultDto(true, loginDto.getUsername(), token));
     } catch (Exception e) {
       System.out.println(Arrays.toString(e.getStackTrace()));
       System.out.println(e.getMessage());
@@ -74,9 +86,9 @@ public class AuthController {
   @Data
   @AllArgsConstructor
   private class AuthResultDto {
-
     private boolean loggedIn;
     private String username;
+    private String token;
   }
 
   @Data

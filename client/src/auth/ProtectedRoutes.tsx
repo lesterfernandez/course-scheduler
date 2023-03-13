@@ -1,23 +1,28 @@
 import { Center, Spinner } from "@chakra-ui/react";
 import { useContext, useEffect, useState } from "react";
 import { Navigate, Outlet } from "react-router-dom";
-import { AuthContext } from "../context/AuthContext";
-import { authenticate } from "../utils/auth";
+import { AuthContext, AuthContextValueSchema } from "./AuthProvider";
+import { saveToken } from "./jwt";
 
 export default function ProtectedRoutes() {
   const [loading, setLoading] = useState(true);
   const { authCtx, setAuthCtx } = useContext(AuthContext);
 
   useEffect(() => {
-    console.log("effect", JSON.stringify(authCtx));
     if (authCtx.loggedIn) return;
-    authenticate()
+    fetch("http://localhost:8080/api/auth/login", {
+      headers: { authorization: `Bearer ${authCtx.token}` },
+    })
+      .then(response => response.json())
       .then(data => {
-        if (authCtx.loggedIn) return;
-        setAuthCtx(data);
-        setLoading(false);
+        const parsedData = AuthContextValueSchema.parse(data);
+        saveToken(parsedData.token);
+        setAuthCtx(parsedData);
       })
-      .catch(console.log);
+      .catch(console.log)
+      .finally(() => {
+        setLoading(false);
+      });
   }, [authCtx, setAuthCtx]);
 
   if (loading && !authCtx.loggedIn) {

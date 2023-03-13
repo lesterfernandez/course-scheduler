@@ -15,7 +15,8 @@ import {
 import { useContext, useEffect, useRef, useState } from "react";
 import { Controller, useForm, type SubmitHandler } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
-import { AuthContext, AuthContextValue } from "../context/AuthContext";
+import { AuthContext, AuthContextValue } from "./AuthProvider";
+import { saveToken } from "./jwt";
 
 interface SignUpData {
   username: string;
@@ -55,7 +56,6 @@ function SignUp() {
 
   const onSubmit: SubmitHandler<SignUpData> = async data => {
     type SignUpResponse = { errorMessage: string } | AuthContextValue;
-
     const response = await fetch("http://localhost:8080/api/auth/register", {
       method: "POST",
       body: JSON.stringify(data),
@@ -63,13 +63,12 @@ function SignUp() {
         "Content-Type": "application/json",
       },
     });
-
     const responseData: SignUpResponse = await response.json();
     if ("errorMessage" in responseData) {
       setServerError(responseData.errorMessage);
       return;
     }
-
+    saveToken(responseData.token);
     setAuthCtx(responseData);
   };
 
@@ -138,21 +137,16 @@ function SignUp() {
       />
 
       <Box>
-        <ButtonGroup mt="5">
+        <ButtonGroup mt="5" isDisabled={isSubmitting}>
           <Button
+            isLoading={isSubmitting}
             colorScheme="blue"
             type="submit"
             onClick={handleSubmit(onSubmit)}
-            disabled={isSubmitting}
           >
             Sign Up
           </Button>
-          <Button
-            disabled={isSubmitting}
-            onClick={() => void navigate("/login")}
-          >
-            Log In
-          </Button>
+          <Button onClick={() => void navigate("/login")}>Log In</Button>
         </ButtonGroup>
       </Box>
     </VStack>

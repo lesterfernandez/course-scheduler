@@ -16,7 +16,7 @@ public class JwtInterceptor implements HandlerInterceptor {
   public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler)
       throws Exception {
     try {
-      authContext.authorize(request, response);
+      authContext.authorize(request);
       if (authContext.authorized && authContext.getUsername() != null) {
         return true;
       }
