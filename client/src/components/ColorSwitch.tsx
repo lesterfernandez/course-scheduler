@@ -6,7 +6,8 @@ const ColorSwitch = () => {
 
   return (
     <IconButton
-      pos="absolute"
+      pos="fixed"
+      zIndex={2}
       top="0"
       right="0"
       m="1rem"
