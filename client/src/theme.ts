@@ -12,6 +12,9 @@ const themeOverride: ThemeOverride = {
       },
     }),
   },
+  colors: {
+    bg: "#242424",
+  },
 };
 
 const theme = extendTheme(themeOverride);

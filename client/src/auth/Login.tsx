@@ -12,10 +12,10 @@ import {
   Text,
   VStack,
 } from "@chakra-ui/react";
-import { useContext, useEffect, useRef, useState } from "react";
+import { useRef, useState } from "react";
 import { Controller, useForm, type SubmitHandler } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
-import { AuthContext, AuthContextValue } from "./AuthProvider";
+import { useAuthStore, type AuthStoreValue } from "./auth-store";
 import { saveToken } from "./jwt";
 
 interface LoginData {
@@ -27,7 +27,6 @@ function Login() {
   const [showPassword, setShowPassword] = useState(false);
   const [serverError, setServerError] = useState<null | string>(null);
   const passwordRef = useRef<HTMLInputElement>(null);
-  const { authCtx, setAuthCtx } = useContext(AuthContext);
   const navigate = useNavigate();
 
   const {
@@ -55,7 +54,7 @@ function Login() {
   };
 
   const onSubmit: SubmitHandler<LoginData> = async data => {
-    type SignUpResponse = { errorMessage: string } | AuthContextValue;
+    type SignUpResponse = { errorMessage: string } | AuthStoreValue;
 
     const response = await fetch("http://localhost:8080/api/auth/login", {
       method: "POST",
@@ -72,14 +71,9 @@ function Login() {
     }
 
     saveToken(responseData.token);
-    setAuthCtx(responseData);
+    useAuthStore.setState(responseData);
+    navigate("/");
   };
-
-  useEffect(() => {
-    if (authCtx.loggedIn) {
-      navigate("/");
-    }
-  }, [navigate, authCtx.loggedIn]);
 
   return (
     <VStack

@@ -4,12 +4,11 @@ import {
   Route,
   RouterProvider,
 } from "react-router-dom";
-import AuthProvider from "./auth/AuthProvider";
 import Login from "./auth/Login";
 import ProtectedRoutes from "./auth/ProtectedRoutes";
 import SignUp from "./auth/SignUp";
-import ColorSwitch from "./components/ColorSwitch";
-import Root from "./components/Root";
+import Root from "./home/Root";
+import ColorSwitch from "./ui/ColorSwitch";
 
 const browserRouter = createBrowserRouter(
   createRoutesFromElements(
@@ -27,9 +26,7 @@ function App() {
   return (
     <div className="App">
       <ColorSwitch />
-      <AuthProvider>
-        <RouterProvider router={browserRouter} />
-      </AuthProvider>
+      <RouterProvider router={browserRouter} />
     </div>
   );
 }

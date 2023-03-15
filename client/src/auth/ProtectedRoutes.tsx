@@ -1,31 +1,31 @@
 import { Center, Spinner } from "@chakra-ui/react";
-import { useContext, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { Navigate, Outlet } from "react-router-dom";
-import { AuthContext, AuthContextValueSchema } from "./AuthProvider";
+import { authStoreValueSchema, useAuthStore } from "./auth-store";
 import { saveToken } from "./jwt";
 
 export default function ProtectedRoutes() {
   const [loading, setLoading] = useState(true);
-  const { authCtx, setAuthCtx } = useContext(AuthContext);
+  const { token, loggedIn } = useAuthStore();
 
   useEffect(() => {
-    if (authCtx.loggedIn) return;
+    if (loggedIn) return;
     fetch("http://localhost:8080/api/auth/login", {
-      headers: { authorization: `Bearer ${authCtx.token}` },
+      headers: { authorization: `Bearer ${token}` },
     })
       .then(response => response.json())
       .then(data => {
-        const parsedData = AuthContextValueSchema.parse(data);
+        const parsedData = authStoreValueSchema.parse(data);
         saveToken(parsedData.token);
-        setAuthCtx(parsedData);
+        useAuthStore.setState(parsedData);
       })
       .catch(console.log)
       .finally(() => {
         setLoading(false);
       });
-  }, [authCtx, setAuthCtx]);
+  }, [token, loggedIn]);
 
-  if (loading && !authCtx.loggedIn) {
+  if (loading && !loggedIn) {
     return (
       <Center h="100vh">
         <Spinner size="xl" speed="0.65s" variant="" color="blue.200" />
@@ -33,5 +33,5 @@ export default function ProtectedRoutes() {
     );
   }
 
-  return authCtx.loggedIn ? <Outlet /> : <Navigate to="/signup" />;
+  return loggedIn ? <Outlet /> : <Navigate to="/signup" />;
 }
