@@ -12,10 +12,12 @@ import jakarta.persistence.OneToOne;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.Setter;
+import lombok.ToString;
 import me.lesterfernandez.CourseScheduler.course.Course;
 import me.lesterfernandez.CourseScheduler.user.UserEntity;
 
 @Entity
+@ToString
 public class Schedule {
 
   @Id
@@ -35,7 +37,7 @@ public class Schedule {
   @NonNull
   @Getter
   @Setter
-  @OneToOne(cascade = CascadeType.PERSIST)
+  @OneToOne(mappedBy = "schedule", cascade = CascadeType.ALL)
   @JsonIgnore
   private UserEntity user;
 
@@ -45,7 +47,7 @@ public class Schedule {
     this.user = user;
   }
 
-  protected Schedule() {}
+  public Schedule() {}
 
   public Schedule(int workload, List<Course> courses) {
     this.workload = workload;

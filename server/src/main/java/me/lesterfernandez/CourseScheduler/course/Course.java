@@ -45,5 +45,5 @@ public class Course {
     this.number = number;
   }
 
-  protected Course() {}
+  public Course() {}
 }

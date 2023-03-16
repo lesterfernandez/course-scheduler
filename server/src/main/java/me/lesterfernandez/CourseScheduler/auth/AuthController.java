@@ -12,6 +12,8 @@ import org.springframework.web.bind.annotation.RestController;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import me.lesterfernandez.CourseScheduler.schedule.Schedule;
+import me.lesterfernandez.CourseScheduler.schedule.ScheduleService;
 import me.lesterfernandez.CourseScheduler.user.UserEntity;
 import me.lesterfernandez.CourseScheduler.user.UserService;
 
@@ -31,6 +33,9 @@ public class AuthController {
   @Autowired
   private AuthContext authContext;
 
+  @Autowired
+  private ScheduleService scheduleService;
+
   @PostMapping("/register")
   public ResponseEntity<?> register(@RequestBody LoginDto loginDto) {
     try {
@@ -39,12 +44,14 @@ public class AuthController {
         return new ResponseEntity<>(new InvalidRequestDto("Username taken"), HttpStatus.CONFLICT);
       }
 
-      UserEntity user = new UserEntity(loginDto.getUsername(), loginDto.getPassword());
-      user.setPassword(passwordEncoder.encode(user.getPassword()));
+      String username = loginDto.getUsername();
+      String password = passwordEncoder.encode(loginDto.getPassword());
+      UserEntity user = new UserEntity(username, password);
       userService.save(user);
+      String token = jwtComponent.generateToken(username);
 
-      String token = jwtComponent.generateToken(user.getUsername());
-      return ResponseEntity.ok().body(new AuthResultDto(true, loginDto.getUsername(), token));
+      return ResponseEntity.ok()
+          .body(new AuthResultDto(true, loginDto.getUsername(), token, user.getSchedule()));
     } catch (Exception e) {
       System.out.println(Arrays.toString(e.getStackTrace()));
       System.out.println(e.getMessage());
@@ -57,25 +64,35 @@ public class AuthController {
   public ResponseEntity<?> implicitLogin(HttpServletRequest req) {
     try {
       authContext.authorize(req);
-      if (authContext.authorized && authContext.getUsername() != null) {
-        return ResponseEntity.ok()
-            .body(new AuthResultDto(true, authContext.getUsername(), authContext.getToken()));
+      if (!authContext.authorized || authContext.getUsername() == null) {
+        return AuthContext.authorizationFailedResponse;
       }
+
+      String username = authContext.getUsername();
+      Schedule schedule = scheduleService.getUserSchedule(username);
+
+      return ResponseEntity.ok().body(
+          new AuthResultDto(true, authContext.getUsername(), authContext.getToken(), schedule));
     } catch (Exception e) {
       System.out.println(Arrays.toString(e.getStackTrace()));
       System.out.println(e.getMessage());
       return ResponseEntity.internalServerError()
           .body(new InvalidRequestDto("Something went wrong!"));
     }
-    return AuthContext.authorizationFailedResponse;
   }
 
   @PostMapping("/login")
   public ResponseEntity<?> login(@RequestBody LoginDto loginDto) {
     try {
       UserEntity user = userService.findByUsername(loginDto.getUsername());
+      boolean verified = passwordEncoder.verify(loginDto.getPassword(), user.getPassword());
+      if (!verified) {
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+      }
       String token = jwtComponent.generateToken(user);
-      return ResponseEntity.ok().body(new AuthResultDto(true, loginDto.getUsername(), token));
+      AuthResultDto response =
+          new AuthResultDto(true, user.getUsername(), token, user.getSchedule());
+      return ResponseEntity.ok().body(response);
     } catch (Exception e) {
       System.out.println(Arrays.toString(e.getStackTrace()));
       System.out.println(e.getMessage());
@@ -89,6 +106,7 @@ public class AuthController {
     private boolean loggedIn;
     private String username;
     private String token;
+    private Schedule schedule;
   }
 
   @Data
