@@ -34,9 +34,6 @@ public class ScheduleController {
   @PostMapping
   private ResponseEntity<?> setUserSchedule(@RequestBody Schedule schedule) {
     UserEntity user = userService.findByUsername(authContext.getUsername());
-    if (user == null) {
-      return AuthContext.authorizationFailedResponse;
-    }
     schedule.setUser(user);
     scheduleService.setUserSchedule(schedule);
     Schedule response = new Schedule(schedule.getWorkload(), schedule.getCourses());

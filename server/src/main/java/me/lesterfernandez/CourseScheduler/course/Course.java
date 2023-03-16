@@ -29,10 +29,15 @@ public class Course {
   @Setter
   private int courseIndex;
 
-  public Course(String letters, String number, int courseIndex) {
+  @Getter
+  @Setter
+  private boolean completed = false;
+
+  public Course(String letters, String number, int courseIndex, boolean completed) {
     this.letters = letters;
     this.number = number;
     this.courseIndex = courseIndex;
+    this.completed = completed;
   }
 
   public Course(String letters, String number) {

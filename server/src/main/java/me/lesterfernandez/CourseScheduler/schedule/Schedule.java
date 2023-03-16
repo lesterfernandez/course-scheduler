@@ -24,7 +24,7 @@ public class Schedule {
 
   @Getter
   @Setter
-  private int workload;
+  private int workload = 5;
 
   @NonNull
   @Getter

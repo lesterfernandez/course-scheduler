@@ -6,4 +6,6 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface ScheduleRepository extends CrudRepository<Schedule, Long> {
   public Schedule findByUserId(Long id);
+
+  public Schedule findByUserUsername(String username);
 }
