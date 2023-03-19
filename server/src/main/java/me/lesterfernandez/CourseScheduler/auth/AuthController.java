@@ -46,16 +46,15 @@ public class AuthController {
 
       String username = loginDto.getUsername();
       String password = passwordEncoder.encode(loginDto.getPassword());
+
       UserEntity user = new UserEntity(username, password);
       userService.save(user);
       String token = jwtComponent.generateToken(username);
 
-      return ResponseEntity.ok()
-          .body(new AuthResultDto(true, loginDto.getUsername(), token, user.getSchedule()));
+      return ResponseEntity.ok().body(new RegisterResponseDto(true, loginDto.getUsername(), token));
     } catch (Exception e) {
       System.out.println(Arrays.toString(e.getStackTrace()));
       System.out.println(e.getMessage());
-
       return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
     }
   }
@@ -72,7 +71,7 @@ public class AuthController {
       Schedule schedule = scheduleService.getUserSchedule(username);
 
       return ResponseEntity.ok().body(
-          new AuthResultDto(true, authContext.getUsername(), authContext.getToken(), schedule));
+          new LoginResponseDto(true, authContext.getUsername(), authContext.getToken(), schedule));
     } catch (Exception e) {
       System.out.println(Arrays.toString(e.getStackTrace()));
       System.out.println(e.getMessage());
@@ -90,8 +89,8 @@ public class AuthController {
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
       }
       String token = jwtComponent.generateToken(user);
-      AuthResultDto response =
-          new AuthResultDto(true, user.getUsername(), token, user.getSchedule());
+      LoginResponseDto response =
+          new LoginResponseDto(true, user.getUsername(), token, user.getSchedule());
       return ResponseEntity.ok().body(response);
     } catch (Exception e) {
       System.out.println(Arrays.toString(e.getStackTrace()));
@@ -102,16 +101,32 @@ public class AuthController {
 
   @Data
   @AllArgsConstructor
-  private class AuthResultDto {
+  public static class LoginDto {
+    private String username;
+    private String password;
+  }
+
+  @Data
+  @AllArgsConstructor
+  private static class LoginResponseDto {
     private boolean loggedIn;
     private String username;
     private String token;
     private Schedule schedule;
   }
 
+
   @Data
   @AllArgsConstructor
-  private class InvalidRequestDto {
+  private static class RegisterResponseDto {
+    private boolean loggedIn;
+    private String username;
+    private String token;
+  }
+
+  @Data
+  @AllArgsConstructor
+  private static class InvalidRequestDto {
     private String errorMessage;
   }
 }

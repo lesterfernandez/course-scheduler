@@ -18,31 +18,25 @@ import me.lesterfernandez.CourseScheduler.user.UserEntity;
 
 @Entity
 @ToString
+@Getter
+@Setter
 public class Schedule {
 
   @Id
   @GeneratedValue(strategy = GenerationType.SEQUENCE)
+  @JsonIgnore
   private Long id;
 
-  @Getter
-  @Setter
-  private int workload = 5;
-
   @NonNull
-  @Getter
-  @Setter
   @OneToMany(cascade = CascadeType.ALL)
   private List<Course> courses;
 
   @NonNull
-  @Getter
-  @Setter
   @OneToOne(mappedBy = "schedule", cascade = CascadeType.ALL)
   @JsonIgnore
   private UserEntity user;
 
   public Schedule(int workload, List<Course> courses, UserEntity user) {
-    this.workload = workload;
     this.courses = courses;
     this.user = user;
   }
@@ -50,7 +44,6 @@ public class Schedule {
   public Schedule() {}
 
   public Schedule(int workload, List<Course> courses) {
-    this.workload = workload;
     this.courses = courses;
   }
 }

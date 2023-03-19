@@ -26,11 +26,14 @@ public class ScheduleService {
   }
 
   public void setUserSchedule(Schedule schedule, UserEntity user) {
-    schedule.setUser(user);
-    user.setSchedule(schedule);
+    if (user.getSchedule() != null) {
+      schedule.setId(user.getSchedule().getId());
+      scheduleRepository.delete(user.getSchedule());
+    }
     orderCourses(schedule);
+    user.setSchedule(schedule);
+    schedule.setUser(user);
     userRepository.save(user);
-    scheduleRepository.save(schedule);
   }
 
   private void orderCourses(Schedule userSchedule) {
@@ -39,6 +42,7 @@ public class ScheduleService {
       Course course = courses.get(i);
       course.setCourseIndex(i);
     }
+    courses.sort((a, b) -> a.getCourseIndex() - b.getCourseIndex());
   }
 
 }

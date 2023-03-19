@@ -1,29 +1,29 @@
 package me.lesterfernandez.CourseScheduler.course;
 
+import java.util.List;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import lombok.Getter;
-import lombok.NonNull;
 import lombok.Setter;
 
 @Entity
 public class Course {
 
+  public enum Status {
+    IN_PROGRESS, AVAILABLE,
+  }
+
   @Id
   @GeneratedValue(strategy = GenerationType.AUTO)
   private Long id;
 
-  @NonNull
   @Getter
   @Setter
-  private String letters;
-
-  @NonNull
-  @Getter
-  @Setter
-  private String number;
+  private String name;
 
   @Getter
   @Setter
@@ -31,18 +31,21 @@ public class Course {
 
   @Getter
   @Setter
-  private boolean completed = false;
+  @Enumerated(EnumType.STRING)
+  private Status status = Status.AVAILABLE;
 
-  public Course(String letters, String number, int courseIndex, boolean completed) {
-    this.letters = letters;
-    this.number = number;
+  @Getter
+  @Setter
+  private List<String> prerequisites;
+
+  public Course(String name, int courseIndex, Status status) {
+    this.name = name;
     this.courseIndex = courseIndex;
-    this.completed = completed;
+    this.status = status;
   }
 
-  public Course(String letters, String number) {
-    this.letters = letters;
-    this.number = number;
+  public Course(String name) {
+    this.name = name;
   }
 
   public Course() {}
