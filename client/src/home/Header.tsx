@@ -11,7 +11,7 @@ const Header = () => {
       pos="sticky"
       top="0"
       pb="4"
-      w="100vw"
+      mb="4"
       shadow="lg"
       bgColor={headerBg}
     >

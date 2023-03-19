@@ -23,7 +23,7 @@ interface SignUpData {
   password: string;
 }
 
-function SignUp() {
+const SignUp = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [serverError, setServerError] = useState<null | string>(null);
   const passwordRef = useRef<HTMLInputElement>(null);
@@ -145,6 +145,6 @@ function SignUp() {
       </Box>
     </VStack>
   );
-}
+};
 
 export default SignUp;
