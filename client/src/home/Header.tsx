@@ -1,7 +1,7 @@
 import { Button, Heading, useColorModeValue, VStack } from "@chakra-ui/react";
 import { useState } from "react";
 import { useAuthStore } from "../auth/auth-store";
-import ScheduleModal from "./ScheduleModal";
+import ScheduleModal from "./EditScheduleModal";
 
 const Header = () => {
   const headerBg = useColorModeValue("white", "bg");

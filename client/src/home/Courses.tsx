@@ -2,10 +2,10 @@ import { Container, Text } from "@chakra-ui/react";
 import { useScheduleStore } from "./schedule-store";
 
 const Courses = () => {
-  const { schedule } = useScheduleStore();
+  const { courses } = useScheduleStore();
   return (
     <Container>
-      {schedule.map((course, i) => (
+      {courses.map((course, i) => (
         <Text
           key={i}
         >{`${course.letters}${course.number}: ${course.status}`}</Text>
