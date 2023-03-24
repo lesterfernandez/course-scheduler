@@ -1,8 +1,10 @@
 import { Center, Spinner } from "@chakra-ui/react";
 import { useEffect, useState } from "react";
 import { Navigate, Outlet } from "react-router-dom";
-import { authStoreValueSchema, useAuthStore } from "./auth-store";
+import { useScheduleStore } from "../home/schedule-store";
+import { useAuthStore } from "./auth-store";
 import { saveToken } from "./jwt";
+import { loginSchema } from "./loginSchema";
 
 export default function ProtectedRoutes() {
   const [loading, setLoading] = useState(true);
@@ -15,9 +17,17 @@ export default function ProtectedRoutes() {
     })
       .then(response => response.json())
       .then(data => {
-        const parsedData = authStoreValueSchema.parse(data);
+        const parsedData = loginSchema.parse(data);
+        if ("errorMessage" in parsedData) {
+          throw new Error(parsedData.errorMessage);
+        }
         saveToken(parsedData.token);
-        useAuthStore.setState(parsedData);
+        useAuthStore.setState({
+          loggedIn: parsedData.loggedIn,
+          username: parsedData.username,
+          token: parsedData.token,
+        });
+        useScheduleStore.setState({ schedule: parsedData.schedule });
       })
       .catch(console.log)
       .finally(() => {

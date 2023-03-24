@@ -15,8 +15,10 @@ import {
 import { useRef, useState } from "react";
 import { Controller, useForm, type SubmitHandler } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
-import { useAuthStore, type AuthStoreValue } from "./auth-store";
+import { useScheduleStore } from "../home/schedule-store";
+import { useAuthStore } from "./auth-store";
 import { saveToken } from "./jwt";
+import { loginSchema } from "./loginSchema";
 
 interface LoginData {
   username: string;
@@ -54,8 +56,6 @@ function Login() {
   };
 
   const onSubmit: SubmitHandler<LoginData> = async data => {
-    type SignUpResponse = { errorMessage: string } | AuthStoreValue;
-
     const response = await fetch("http://localhost:8080/api/auth/login", {
       method: "POST",
       body: JSON.stringify(data),
@@ -63,15 +63,21 @@ function Login() {
         "Content-Type": "application/json",
       },
     });
+    const responseData = loginSchema.safeParse(await response.json());
 
-    const responseData: SignUpResponse = await response.json();
-    if ("errorMessage" in responseData) {
-      setServerError(responseData.errorMessage);
+    if (!responseData.success || "errorMessage" in responseData.data) {
+      setServerError(
+        responseData.success && "errorMessage" in responseData.data // I shouldn't have to put the second condition on this...
+          ? responseData.data.errorMessage
+          : "Something went wrong!"
+      );
       return;
     }
 
-    saveToken(responseData.token);
-    useAuthStore.setState(responseData);
+    const { loggedIn, token, username, schedule } = responseData.data;
+    saveToken(token);
+    useAuthStore.setState({ loggedIn, username, token });
+    useScheduleStore.setState({ schedule });
     navigate("/");
   };
 

@@ -15,7 +15,7 @@ import {
 import { useRef, useState } from "react";
 import { Controller, useForm, type SubmitHandler } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
-import { useAuthStore, type AuthStoreValue } from "./auth-store";
+import { useAuthStore, type AuthStore } from "./auth-store";
 import { saveToken } from "./jwt";
 
 interface SignUpData {
@@ -54,7 +54,7 @@ const SignUp = () => {
   };
 
   const onSubmit: SubmitHandler<SignUpData> = async data => {
-    type SignUpResponse = { errorMessage: string } | AuthStoreValue;
+    type SignUpResponse = { errorMessage: string } | AuthStore;
     const response = await fetch("http://localhost:8080/api/auth/register", {
       method: "POST",
       body: JSON.stringify(data),

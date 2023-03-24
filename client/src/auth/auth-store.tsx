@@ -7,10 +7,10 @@ export const useAuthStore = create(() => ({
   token: localStorage.getItem("token") || "",
 }));
 
-export const authStoreValueSchema = z.object({
+export const authStoreSchema = z.object({
   loggedIn: z.boolean(),
   username: z.string(),
   token: z.string(),
 });
 
-export type AuthStoreValue = z.infer<typeof authStoreValueSchema>;
+export type AuthStore = z.infer<typeof authStoreSchema>;

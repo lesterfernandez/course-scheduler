@@ -1,16 +1,21 @@
+import { z } from "zod";
 import { create } from "zustand";
 
-export interface Course {
-  letters: string;
-  number: string;
+export const scheduleSchema = z.array(
+  z.object({
+    letters: z.string(),
+    number: z.string(),
+    status: z.enum(["AVAILABLE", "IN_PROGRESS"]),
+  })
+);
+
+export type Schedule = z.infer<typeof scheduleSchema>;
+export type Course = Schedule[number];
+
+export interface ScheduleStore {
+  schedule: Schedule;
 }
 
-interface ScheduleStore {
-  schedule: Course[];
-}
-
-const useScheduleStore = create<ScheduleStore>(() => ({
+export const useScheduleStore = create<ScheduleStore>(() => ({
   schedule: [],
 }));
-
-export default useScheduleStore;
