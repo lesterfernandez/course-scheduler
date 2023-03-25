@@ -1,5 +1,6 @@
 package me.lesterfernandez.CourseScheduler.auth;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -94,8 +95,11 @@ public class AuthController {
 
       String token = jwtComponent.generateToken(user);
 
+      List<Course> userCourses =
+          user.getSchedule() == null ? new ArrayList<>() : user.getSchedule().getCourses();
+
       LoginResponseDto response =
-          new LoginResponseDto(true, user.getUsername(), token, user.getSchedule().getCourses());
+          new LoginResponseDto(true, user.getUsername(), token, userCourses);
       return ResponseEntity.ok().body(response);
     } catch (Exception e) {
       System.out.println(e.getMessage() + "\n" + Arrays.toString(e.getStackTrace()));
