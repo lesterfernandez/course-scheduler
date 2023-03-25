@@ -1,6 +1,5 @@
 import { DeleteIcon } from "@chakra-ui/icons";
 import { IconButton, Text } from "@chakra-ui/react";
-import React from "react";
 import { useFieldArray, useForm } from "react-hook-form";
 import { useScheduleStore } from "./schedule-store";
 

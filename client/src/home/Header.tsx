@@ -1,7 +1,7 @@
 import { Button, Heading, useColorModeValue, VStack } from "@chakra-ui/react";
 import { useState } from "react";
 import { useAuthStore } from "../auth/auth-store";
-import ScheduleModal from "./EditScheduleModal";
+import EditScheduleModal from "./EditScheduleModal";
 
 const Header = () => {
   const headerBg = useColorModeValue("white", "bg");
@@ -28,7 +28,7 @@ const Header = () => {
       </VStack>
 
       {modalOpen && (
-        <ScheduleModal
+        <EditScheduleModal
           modalOpen={modalOpen}
           toggleModal={() => void setModalOpen(prev => !prev)}
         />

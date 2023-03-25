@@ -15,7 +15,7 @@ interface Props {
   toggleModal: () => void;
 }
 
-const ScheduleModal = ({ modalOpen, toggleModal }: Props) => {
+const EditScheduleModal = ({ modalOpen, toggleModal }: Props) => {
   const onClose = () => {
     toggleModal();
   };
@@ -46,4 +46,4 @@ const ScheduleModal = ({ modalOpen, toggleModal }: Props) => {
   );
 };
 
-export default ScheduleModal;
+export default EditScheduleModal;
