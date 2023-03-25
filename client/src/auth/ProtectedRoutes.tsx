@@ -27,7 +27,7 @@ export default function ProtectedRoutes() {
           username: parsedData.username,
           token: parsedData.token,
         });
-        useScheduleStore.setState({ schedule: parsedData.schedule });
+        useScheduleStore.setState({ courses: parsedData.courses });
       })
       .catch(console.log)
       .finally(() => {

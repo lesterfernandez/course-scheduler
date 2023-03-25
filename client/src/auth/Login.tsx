@@ -74,10 +74,10 @@ function Login() {
       return;
     }
 
-    const { loggedIn, token, username, schedule } = responseData.data;
+    const { loggedIn, token, username, courses } = responseData.data;
     saveToken(token);
     useAuthStore.setState({ loggedIn, username, token });
-    useScheduleStore.setState({ schedule });
+    useScheduleStore.setState({ courses });
     navigate("/");
   };
 
