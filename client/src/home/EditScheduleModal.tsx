@@ -11,16 +11,16 @@ import {
 import EditScheduleForm from "./EditScheduleForm";
 
 interface Props {
-  modalOpen: boolean;
+  isModalOpen: boolean;
   toggleModal: () => void;
 }
 
-const EditScheduleModal = ({ modalOpen, toggleModal }: Props) => {
+const EditScheduleModal = ({ isModalOpen, toggleModal }: Props) => {
   const onClose = () => {
     toggleModal();
   };
   return (
-    <Modal isOpen={modalOpen} onClose={onClose} size="2xl">
+    <Modal isOpen={isModalOpen} onClose={onClose} size="2xl">
       <ModalOverlay />
       <ModalContent _dark={{ bg: "bg" }}>
         <ModalHeader>Edit Schedule</ModalHeader>

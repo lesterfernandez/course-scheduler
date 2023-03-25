@@ -1,12 +1,23 @@
-import { Button, Heading, useColorModeValue, VStack } from "@chakra-ui/react";
-import { useState } from "react";
+import {
+  Button,
+  Heading,
+  useColorModeValue,
+  useDisclosure,
+  VStack,
+} from "@chakra-ui/react";
 import { useAuthStore } from "../auth/auth-store";
 import EditScheduleModal from "./EditScheduleModal";
 
 const Header = () => {
   const headerBg = useColorModeValue("white", "bg");
   const { username } = useAuthStore();
-  const [modalOpen, setModalOpen] = useState(false);
+
+  const {
+    isOpen: isModalOpen,
+    onOpen: openModal,
+    onToggle: toggleModal,
+  } = useDisclosure();
+
   return (
     <>
       <VStack
@@ -22,17 +33,11 @@ const Header = () => {
         <Heading textAlign="center" py="4">
           {username}'s School Schedule
         </Heading>
-        <Button size="lg" onClick={() => void setModalOpen(true)}>
+        <Button size="lg" onClick={openModal}>
           Edit Schedule
         </Button>
       </VStack>
-
-      {modalOpen && (
-        <EditScheduleModal
-          modalOpen={modalOpen}
-          toggleModal={() => void setModalOpen(prev => !prev)}
-        />
-      )}
+      <EditScheduleModal isModalOpen={isModalOpen} toggleModal={toggleModal} />
     </>
   );
 };
