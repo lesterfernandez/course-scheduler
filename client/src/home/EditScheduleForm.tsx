@@ -1,5 +1,5 @@
-import { DeleteIcon } from "@chakra-ui/icons";
-import { IconButton, Text } from "@chakra-ui/react";
+import { AddIcon, DeleteIcon } from "@chakra-ui/icons";
+import { Button, Heading, HStack, IconButton } from "@chakra-ui/react";
 import { useFieldArray, useForm } from "react-hook-form";
 import { useScheduleStore } from "./schedule-store";
 
@@ -19,7 +19,10 @@ const EditScheduleForm = () => {
 
   return (
     <>
-      <Text>Hello world</Text>
+      <HStack mx="auto" justify="space-around" align="center">
+        <Heading size="md">Courses</Heading>
+        <Button rightIcon={<AddIcon />}>Add Course</Button>
+      </HStack>
       {fields.map((field, i) => (
         <>
           <IconButton

@@ -23,8 +23,8 @@ const EditScheduleModal = ({ isModalOpen, toggleModal }: Props) => {
     <Modal isOpen={isModalOpen} onClose={onClose} size="2xl">
       <ModalOverlay />
       <ModalContent _dark={{ bg: "bg" }}>
-        <ModalHeader>Edit Schedule</ModalHeader>
-        <ModalCloseButton />
+        <ModalHeader fontSize="2xl">Edit Schedule</ModalHeader>
+        <ModalCloseButton size="lg" />
         <ModalBody>
           <EditScheduleForm />
         </ModalBody>
