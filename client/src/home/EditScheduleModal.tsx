@@ -20,14 +20,9 @@ const EditScheduleModal = ({ modalOpen, toggleModal }: Props) => {
     toggleModal();
   };
   return (
-    <Modal
-      isOpen={modalOpen}
-      onClose={onClose}
-      closeOnOverlayClick={false}
-      size="2xl"
-    >
+    <Modal isOpen={modalOpen} onClose={onClose} size="2xl">
       <ModalOverlay />
-      <ModalContent bg="bg">
+      <ModalContent _dark={{ bg: "bg" }}>
         <ModalHeader>Edit Schedule</ModalHeader>
         <ModalCloseButton />
         <ModalBody>
