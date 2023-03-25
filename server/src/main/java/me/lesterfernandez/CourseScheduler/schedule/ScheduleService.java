@@ -22,7 +22,11 @@ public class ScheduleService {
   }
 
   public Schedule getUserSchedule(String username) {
-    return scheduleRepository.findByUserUsername(username);
+    Schedule userSchedule = scheduleRepository.findByUserUsername(username);
+    if (userSchedule == null) {
+      return new Schedule();
+    }
+    return userSchedule;
   }
 
   public void setUserSchedule(Schedule schedule, UserEntity user) {

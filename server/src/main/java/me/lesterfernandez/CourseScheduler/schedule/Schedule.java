@@ -1,5 +1,6 @@
 package me.lesterfernandez.CourseScheduler.schedule;
 
+import java.util.ArrayList;
 import java.util.List;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.CascadeType;
@@ -29,21 +30,21 @@ public class Schedule {
 
   @NonNull
   @OneToMany(cascade = CascadeType.ALL)
-  private List<Course> courses;
+  private List<Course> courses = new ArrayList<>();
 
   @NonNull
   @OneToOne(mappedBy = "schedule", cascade = CascadeType.ALL)
   @JsonIgnore
   private UserEntity user;
 
-  public Schedule(int workload, List<Course> courses, UserEntity user) {
+  public Schedule(List<Course> courses, UserEntity user) {
     this.courses = courses;
     this.user = user;
   }
 
   public Schedule() {}
 
-  public Schedule(int workload, List<Course> courses) {
+  public Schedule(List<Course> courses) {
     this.courses = courses;
   }
 }

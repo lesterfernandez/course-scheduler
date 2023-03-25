@@ -1,6 +1,7 @@
 package me.lesterfernandez.CourseScheduler.auth;
 
 import java.util.Arrays;
+import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -12,10 +13,12 @@ import org.springframework.web.bind.annotation.RestController;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import me.lesterfernandez.CourseScheduler.course.Course;
 import me.lesterfernandez.CourseScheduler.schedule.Schedule;
 import me.lesterfernandez.CourseScheduler.schedule.ScheduleService;
 import me.lesterfernandez.CourseScheduler.user.UserEntity;
 import me.lesterfernandez.CourseScheduler.user.UserService;
+import me.lesterfernandez.CourseScheduler.utils.ErrorResponseDto;
 
 @RestController
 @RequestMapping("/api/auth")
@@ -40,22 +43,22 @@ public class AuthController {
   public ResponseEntity<?> register(@RequestBody LoginDto loginDto) {
     try {
       if (userService.existsByUsername(loginDto.getUsername())) {
-        System.out.println("username taken!");
-        return new ResponseEntity<>(new InvalidRequestDto("Username taken"), HttpStatus.CONFLICT);
+        return new ResponseEntity<>(new ErrorResponseDto("Username taken"), HttpStatus.CONFLICT);
       }
 
       String username = loginDto.getUsername();
       String password = passwordEncoder.encode(loginDto.getPassword());
-
       UserEntity user = new UserEntity(username, password);
       userService.save(user);
       String token = jwtComponent.generateToken(username);
 
-      return ResponseEntity.ok().body(new RegisterResponseDto(true, loginDto.getUsername(), token));
+      RegisterResponseDto registerResponse =
+          new RegisterResponseDto(true, loginDto.getUsername(), token);
+      return ResponseEntity.ok().body(registerResponse);
     } catch (Exception e) {
-      System.out.println(Arrays.toString(e.getStackTrace()));
-      System.out.println(e.getMessage());
-      return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+      System.out.println(e.getMessage() + "\n" + Arrays.toString(e.getStackTrace()));
+      return new ResponseEntity<>(new ErrorResponseDto("Something went wrong!"),
+          HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
 
@@ -70,13 +73,13 @@ public class AuthController {
       String username = authContext.getUsername();
       Schedule schedule = scheduleService.getUserSchedule(username);
 
-      return ResponseEntity.ok().body(
-          new LoginResponseDto(true, authContext.getUsername(), authContext.getToken(), schedule));
+      LoginResponseDto loginResponse = new LoginResponseDto(true, authContext.getUsername(),
+          authContext.getToken(), schedule.getCourses());
+      return ResponseEntity.ok().body(loginResponse);
     } catch (Exception e) {
-      System.out.println(Arrays.toString(e.getStackTrace()));
-      System.out.println(e.getMessage());
-      return ResponseEntity.internalServerError()
-          .body(new InvalidRequestDto("Something went wrong!"));
+      System.out.println(e.getMessage() + "\n" + Arrays.toString(e.getStackTrace()));
+      return new ResponseEntity<>(new ErrorResponseDto("Something went wrong!"),
+          HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
 
@@ -86,16 +89,18 @@ public class AuthController {
       UserEntity user = userService.findByUsername(loginDto.getUsername());
       boolean verified = passwordEncoder.verify(loginDto.getPassword(), user.getPassword());
       if (!verified) {
-        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        return AuthContext.authorizationFailedResponse;
       }
+
       String token = jwtComponent.generateToken(user);
+
       LoginResponseDto response =
-          new LoginResponseDto(true, user.getUsername(), token, user.getSchedule());
+          new LoginResponseDto(true, user.getUsername(), token, user.getSchedule().getCourses());
       return ResponseEntity.ok().body(response);
     } catch (Exception e) {
-      System.out.println(Arrays.toString(e.getStackTrace()));
-      System.out.println(e.getMessage());
-      return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+      System.out.println(e.getMessage() + "\n" + Arrays.toString(e.getStackTrace()));
+      return new ResponseEntity<>(new ErrorResponseDto("Something went wrong!"),
+          HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
 
@@ -112,7 +117,7 @@ public class AuthController {
     private boolean loggedIn;
     private String username;
     private String token;
-    private Schedule schedule;
+    private List<Course> courses;
   }
 
 
@@ -122,11 +127,5 @@ public class AuthController {
     private boolean loggedIn;
     private String username;
     private String token;
-  }
-
-  @Data
-  @AllArgsConstructor
-  private static class InvalidRequestDto {
-    private String errorMessage;
   }
 }
