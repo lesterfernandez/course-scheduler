@@ -17,8 +17,8 @@ import { Controller, useForm, type SubmitHandler } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
 import { useScheduleStore } from "../home/schedule-store";
 import { useAuthStore } from "./auth-store";
+import { loginSchema } from "./authSchemas";
 import { saveToken } from "./jwt";
-import { loginSchema } from "./loginSchema";
 
 interface LoginData {
   username: string;
@@ -41,7 +41,6 @@ function Login() {
       username: "",
       password: "",
     },
-    criteriaMode: "all",
   });
 
   const toggleShowPassword = () => setShowPassword(!showPassword);
@@ -63,11 +62,11 @@ function Login() {
         "Content-Type": "application/json",
       },
     });
-    const responseData = loginSchema.safeParse(await response.json());
 
+    const responseData = loginSchema.safeParse(await response.json());
     if (!responseData.success || "errorMessage" in responseData.data) {
       setServerError(
-        responseData.success && "errorMessage" in responseData.data // I shouldn't have to put the second condition on this...
+        responseData.success && "errorMessage" in responseData.data
           ? responseData.data.errorMessage
           : "Something went wrong!"
       );
@@ -141,6 +140,7 @@ function Login() {
 
       <Box>
         <ButtonGroup mt="5" isDisabled={isSubmitting}>
+          <Button onClick={() => void navigate("/signup")}>Sign Up</Button>
           <Button
             colorScheme="blue"
             type="submit"
@@ -149,7 +149,6 @@ function Login() {
           >
             Login
           </Button>
-          <Button onClick={() => void navigate("/signup")}>Sign Up</Button>
         </ButtonGroup>
       </Box>
     </VStack>

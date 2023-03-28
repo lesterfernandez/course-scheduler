@@ -3,8 +3,8 @@ import { useEffect, useState } from "react";
 import { Navigate, Outlet } from "react-router-dom";
 import { useScheduleStore } from "../home/schedule-store";
 import { useAuthStore } from "./auth-store";
+import { loginSchema } from "./authSchemas";
 import { saveToken } from "./jwt";
-import { loginSchema } from "./loginSchema";
 
 export default function ProtectedRoutes() {
   const [loading, setLoading] = useState(true);

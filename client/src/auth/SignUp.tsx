@@ -15,7 +15,8 @@ import {
 import { useRef, useState } from "react";
 import { Controller, useForm, type SubmitHandler } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
-import { useAuthStore, type AuthStore } from "./auth-store";
+import { useAuthStore } from "./auth-store";
+import { signUpSchema } from "./authSchemas";
 import { saveToken } from "./jwt";
 
 interface SignUpData {
@@ -39,7 +40,6 @@ const SignUp = () => {
       username: "",
       password: "",
     },
-    criteriaMode: "all",
   });
 
   const toggleShowPassword = () => setShowPassword(!showPassword);
@@ -54,7 +54,6 @@ const SignUp = () => {
   };
 
   const onSubmit: SubmitHandler<SignUpData> = async data => {
-    type SignUpResponse = { errorMessage: string } | AuthStore;
     const response = await fetch("http://localhost:8080/api/auth/register", {
       method: "POST",
       body: JSON.stringify(data),
@@ -62,13 +61,19 @@ const SignUp = () => {
         "Content-Type": "application/json",
       },
     });
-    const responseData: SignUpResponse = await response.json();
-    if ("errorMessage" in responseData) {
-      setServerError(responseData.errorMessage);
+
+    const responseData = signUpSchema.safeParse(await response.json());
+    if (!responseData.success || "errorMessage" in responseData.data) {
+      setServerError(
+        responseData.success && "errorMessage" in responseData.data
+          ? responseData.data.errorMessage
+          : "Something went wrong!"
+      );
       return;
     }
-    saveToken(responseData.token);
-    useAuthStore.setState(responseData);
+
+    saveToken(responseData.data.token);
+    useAuthStore.setState(responseData.data);
     navigate("/");
   };
 
@@ -132,6 +137,7 @@ const SignUp = () => {
 
       <Box>
         <ButtonGroup mt="5" isDisabled={isSubmitting}>
+          <Button onClick={() => void navigate("/login")}>Log In</Button>
           <Button
             isLoading={isSubmitting}
             colorScheme="blue"
@@ -140,7 +146,6 @@ const SignUp = () => {
           >
             Sign Up
           </Button>
-          <Button onClick={() => void navigate("/login")}>Log In</Button>
         </ButtonGroup>
       </Box>
     </VStack>
