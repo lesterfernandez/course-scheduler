@@ -4,6 +4,8 @@ import { authStoreSchema } from "./auth-store";
 
 const errorSchema = z.object({ errorMessage: z.string() });
 
-export const loginSchema = authStoreSchema.and(scheduleSchema).or(errorSchema);
+export const loginSchema = authStoreSchema
+  .merge(scheduleSchema)
+  .or(errorSchema);
 
 export const signUpSchema = authStoreSchema.or(errorSchema);

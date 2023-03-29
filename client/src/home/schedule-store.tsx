@@ -14,10 +14,6 @@ export const scheduleSchema = z.object({
 export type Schedule = z.infer<typeof scheduleSchema>;
 export type Course = Schedule["courses"][number];
 
-const initialValue = [
-  { letters: "cop", number: "2800", status: "AVAILABLE" as const },
-];
-
 export const useScheduleStore = create<Schedule>(() => ({
-  courses: [...initialValue],
+  courses: [],
 }));

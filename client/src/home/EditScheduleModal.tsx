@@ -1,4 +1,4 @@
-import { AddIcon, DeleteIcon } from "@chakra-ui/icons";
+import { AddIcon, ArrowBackIcon, DeleteIcon } from "@chakra-ui/icons";
 import {
   Box,
   Button,
@@ -19,8 +19,15 @@ import {
   ModalOverlay,
   Text,
 } from "@chakra-ui/react";
-import { useEffect, useRef } from "react";
-import { SubmitHandler, useFieldArray, useForm } from "react-hook-form";
+import { Select } from "chakra-react-select";
+import { createContext, useContext, useEffect, useState } from "react";
+import {
+  SubmitHandler,
+  useFieldArray,
+  UseFieldArrayReturn,
+  useForm,
+  UseFormReturn,
+} from "react-hook-form";
 import { Schedule, useScheduleStore } from "./schedule-store";
 
 interface Props {
@@ -28,45 +35,52 @@ interface Props {
   toggleModal: () => void;
 }
 
+interface EditScheduleContext {
+  methods: UseFormReturn<Schedule>;
+  fieldArrayMethods: UseFieldArrayReturn<Schedule, "courses">;
+  submitForm: SubmitHandler<Schedule>;
+  setStep: React.Dispatch<React.SetStateAction<number>>;
+  onClose: () => void;
+  toggleModal: () => void;
+}
+
+const EditScheduleModalContext = createContext({} as EditScheduleContext);
+
 const EditScheduleModal = ({ isModalOpen, toggleModal }: Props) => {
+  const [step, setStep] = useState(0);
+
   const { courses } = useScheduleStore();
 
+  const methods = useForm<Schedule>({ defaultValues: { courses } });
   const {
-    register,
-    formState: { errors },
-    handleSubmit,
+    formState: { isSubmitSuccessful },
     control,
     reset,
-  } = useForm<Schedule>({ defaultValues: { courses } });
+  } = methods;
 
-  const { fields, remove, append } = useFieldArray({
+  const fieldArrayMethods = useFieldArray({
     name: "courses",
     control,
-    rules: {
-      minLength: {
-        value: 1,
-        message: "Schedule must have at least one course",
-      },
-    },
   });
 
-  const modalBodyRef = useRef<HTMLDivElement | null>(null);
-  useEffect(() => {
-    if (!modalBodyRef.current) return;
-    modalBodyRef.current.scroll(0, modalBodyRef.current.scrollHeight);
-  }, [fields.length]);
-
   const onClose = () => {
+    setStep(0);
     toggleModal();
     reset({ courses });
   };
 
-  const onSubmit: SubmitHandler<{ courses: typeof courses }> = ({
-    courses: newCourses,
-  }) => {
-    useScheduleStore.setState({ courses: newCourses });
-    toggleModal();
+  const submitForm: SubmitHandler<Schedule> = ({ courses: newCourses }) => {
+    const cleanedCourses = newCourses.map(course => ({
+      letters: course.letters.trim().toUpperCase().replaceAll(" ", ""),
+      number: course.number.trim().toUpperCase().replaceAll(" ", ""),
+      status: course.status,
+    }));
+    useScheduleStore.setState({ courses: cleanedCourses });
   };
+
+  useEffect(() => {
+    reset({ courses });
+  }, [courses, reset, isSubmitSuccessful]);
 
   return (
     <Modal
@@ -76,89 +90,205 @@ const EditScheduleModal = ({ isModalOpen, toggleModal }: Props) => {
       scrollBehavior="inside"
     >
       <ModalOverlay />
-      <ModalContent _dark={{ bg: "bg" }}>
-        <ModalHeader fontSize="2xl">Edit Schedule</ModalHeader>
-        <ModalCloseButton size="lg" />
-
-        <ModalBody ref={modalBodyRef}>
-          <Grid gap="2rem">
-            {fields ? (
-              fields.map((field, i) => (
-                <Box key={field.id}>
-                  <HStack justify="space-between" align="end">
-                    <Heading size="md" py="2">
-                      {field.letters + field.number || "New Course"}
-                    </Heading>
-                    <IconButton
-                      icon={<DeleteIcon />}
-                      aria-label="Delete course"
-                      onClick={() => void remove(i)}
-                      size="sm"
-                    />
-                  </HStack>
-                  <FormControl
-                    isInvalid={
-                      !!(errors.courses && errors.courses[i]?.letters?.message)
-                    }
-                  >
-                    <FormLabel>Course Subject Code</FormLabel>
-                    <Input
-                      {...register(`courses.${i}.letters` as const, {
-                        required: "Course Subject Code is required",
-                      })}
-                    />
-                    <FormErrorMessage>
-                      {errors.courses && errors.courses[i]?.letters?.message}
-                    </FormErrorMessage>
-                  </FormControl>
-                  <FormControl
-                    isInvalid={
-                      !!(errors.courses && errors.courses[i]?.number?.message)
-                    }
-                  >
-                    <FormLabel>Course Number</FormLabel>
-                    <Input
-                      {...register(`courses.${i}.number` as const, {
-                        required: "Course Number is required",
-                      })}
-                    />
-                    <FormErrorMessage>
-                      {errors.courses && errors.courses[i]?.number?.message}
-                    </FormErrorMessage>
-                  </FormControl>
-                </Box>
-              ))
-            ) : (
-              <Text textAlign="center">
-                Empty schedule. Click 'Add Course' to begin creating a schedule.
-              </Text>
-            )}
-          </Grid>
-        </ModalBody>
-
-        <ModalFooter gap="1">
-          <Button
-            rightIcon={<AddIcon />}
-            onClick={() => {
-              append(
-                { letters: "", number: "", status: "AVAILABLE" },
-                { shouldFocus: false }
-              );
-            }}
-            mr="auto"
-          >
-            Add Course
-          </Button>
-          <Button variant="outline" onClick={onClose}>
-            Cancel
-          </Button>
-          <Button colorScheme="blue" mr={3} onClick={handleSubmit(onSubmit)}>
-            Submit
-          </Button>
-        </ModalFooter>
+      <ModalContent _dark={{ bg: "bg" }} h="90vh">
+        <EditScheduleModalContext.Provider
+          value={{
+            methods,
+            fieldArrayMethods,
+            onClose,
+            setStep,
+            submitForm,
+            toggleModal,
+          }}
+        >
+          {step === 0 ? <CoursesForm /> : <PrerequisitesForm />}
+        </EditScheduleModalContext.Provider>
       </ModalContent>
     </Modal>
   );
 };
 
 export default EditScheduleModal;
+
+const CoursesForm = () => {
+  const {
+    fieldArrayMethods: { fields, remove, append },
+    methods: {
+      handleSubmit,
+      register,
+      formState: { errors },
+    },
+    onClose,
+    submitForm,
+    setStep,
+    toggleModal,
+  } = useContext(EditScheduleModalContext);
+
+  return (
+    <>
+      <ModalHeader fontSize="2xl">Add Courses</ModalHeader>
+      <ModalCloseButton size="lg" />
+
+      <ModalBody>
+        <Grid gap="2rem">
+          {fields.length ? (
+            fields.map((field, i) => (
+              <Box key={field.id}>
+                <HStack justify="space-between" align="end">
+                  <Heading size="md" py="2">
+                    {field.letters + field.number || "New Course"}
+                  </Heading>
+                  <IconButton
+                    icon={<DeleteIcon />}
+                    aria-label="Delete course"
+                    onClick={() => void remove(i)}
+                    size="sm"
+                  />
+                </HStack>
+
+                <FormControl
+                  isInvalid={
+                    !!(errors.courses && errors.courses[i]?.letters?.message)
+                  }
+                >
+                  <FormLabel>Course Subject Code</FormLabel>
+                  <Input
+                    {...register(`courses.${i}.letters` as const, {
+                      required: "Course Subject Code is required",
+                    })}
+                  />
+                  <FormErrorMessage>
+                    {errors.courses && errors.courses[i]?.letters?.message}
+                  </FormErrorMessage>
+                </FormControl>
+
+                <FormControl
+                  isInvalid={
+                    !!(errors.courses && errors.courses[i]?.number?.message)
+                  }
+                >
+                  <FormLabel>Course Number</FormLabel>
+                  <Input
+                    {...register(`courses.${i}.number` as const, {
+                      required: "Course Number is required",
+                    })}
+                  />
+                  <FormErrorMessage>
+                    {errors.courses && errors.courses[i]?.number?.message}
+                  </FormErrorMessage>
+                </FormControl>
+              </Box>
+            ))
+          ) : (
+            <Text textAlign="center">
+              Empty schedule. Click 'Add Course' to begin creating a schedule.
+            </Text>
+          )}
+        </Grid>
+      </ModalBody>
+
+      <ModalFooter gap="1">
+        <Button
+          rightIcon={<AddIcon />}
+          onClick={() => {
+            append({ letters: "", number: "", status: "AVAILABLE" });
+          }}
+          mr="auto"
+        >
+          Add Course
+        </Button>
+        <Button variant="outline" onClick={onClose}>
+          Cancel
+        </Button>
+        {fields.length ? (
+          <Button
+            colorScheme="blue"
+            mr={3}
+            onClick={handleSubmit(data => {
+              submitForm(data);
+              setStep(1);
+            })}
+            isDisabled={fields.length === 0}
+          >
+            Next
+          </Button>
+        ) : (
+          <Button
+            colorScheme="blue"
+            mr={3}
+            onClick={handleSubmit(data => {
+              submitForm(data);
+              toggleModal();
+            })}
+          >
+            Submit
+          </Button>
+        )}
+      </ModalFooter>
+    </>
+  );
+};
+
+const PrerequisitesForm = () => {
+  const {
+    fieldArrayMethods: { fields },
+    methods: { handleSubmit },
+    onClose,
+    submitForm,
+    setStep,
+    toggleModal,
+  } = useContext(EditScheduleModalContext);
+
+  return (
+    <>
+      <ModalHeader fontSize="2xl">Edit Prerequisites</ModalHeader>
+      <ModalCloseButton size="lg" />
+
+      <ModalBody>
+        <Grid gap="2rem">
+          {fields.map(field => (
+            <Box key={field.id}>
+              <Heading size="md" py="2">
+                {field.letters + field.number}
+              </Heading>
+              <Select
+                options={fields
+                  .filter(f => f.id !== field.id)
+                  .map(f => ({
+                    value: f.letters + f.number,
+                    label: f.letters + f.number,
+                  }))}
+                isMulti
+                isClearable={false}
+              />
+            </Box>
+          ))}
+        </Grid>
+      </ModalBody>
+
+      <ModalFooter gap="1">
+        <Button
+          rightIcon={<ArrowBackIcon />}
+          onClick={() => void setStep(0)}
+          mr="auto"
+        >
+          Back
+        </Button>
+        <Button variant="outline" onClick={onClose}>
+          Cancel
+        </Button>
+        <Button
+          colorScheme="blue"
+          mr={3}
+          onClick={handleSubmit(data => {
+            submitForm(data);
+            toggleModal();
+            setStep(0);
+          })}
+        >
+          Submit
+        </Button>
+      </ModalFooter>
+    </>
+  );
+};
