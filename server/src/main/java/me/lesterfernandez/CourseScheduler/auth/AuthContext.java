@@ -30,8 +30,14 @@ public class AuthContext {
 
   public void authorize(HttpServletRequest request) {
     String tokenHeader = request.getHeader("authorization");
-    boolean invalidAuthHeader = tokenHeader == null || !tokenHeader.startsWith("Bearer ")
-        || tokenHeader.charAt(tokenHeader.length() - 1) == ' ';
+
+    if (tokenHeader == null) {
+      this.authorized = false;
+      return;
+    }
+
+    boolean invalidAuthHeader =
+        !tokenHeader.startsWith("Bearer ") || tokenHeader.charAt(tokenHeader.length() - 1) == ' ';
 
     if (invalidAuthHeader) {
       this.authorized = false;

@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+
 import me.lesterfernandez.CourseScheduler.auth.AuthContext;
 import me.lesterfernandez.CourseScheduler.user.UserEntity;
 import me.lesterfernandez.CourseScheduler.user.UserService;
@@ -24,17 +25,17 @@ public class ScheduleController {
   private UserService userService;
 
   @GetMapping
-  public ResponseEntity<Schedule> getUserSchedule() {
+  public ResponseEntity<ScheduleDto> getUserSchedule() {
     String username = authContext.getUsername();
-    Schedule userSchedule = scheduleService.getUserSchedule(username);
-    return new ResponseEntity<>(userSchedule, HttpStatus.OK);
+    ScheduleDto schedule = scheduleService.getUserSchedule(username);
+    return new ResponseEntity<>(schedule, HttpStatus.OK);
   }
 
   @PostMapping
-  public ResponseEntity<Schedule> setUserSchedule(@RequestBody Schedule schedule) {
+  public ResponseEntity<ScheduleDto> setUserSchedule(@RequestBody Schedule schedule) {
     UserEntity user = userService.findByUsername(authContext.getUsername());
     scheduleService.setUserSchedule(schedule, user);
-    return new ResponseEntity<>(schedule, HttpStatus.CREATED);
+    ScheduleDto userSchedule = new ScheduleDto(schedule);
+    return new ResponseEntity<>(userSchedule, HttpStatus.CREATED);
   }
-
 }

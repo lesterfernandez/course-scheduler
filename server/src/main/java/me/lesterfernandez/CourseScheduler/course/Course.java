@@ -1,12 +1,16 @@
 package me.lesterfernandez.CourseScheduler.course;
 
+import java.util.ArrayList;
 import java.util.List;
+import jakarta.annotation.Nonnull;
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.OneToMany;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -23,7 +27,18 @@ public class Course {
 
   @Getter
   @Setter
-  private String name;
+  @Nonnull
+  private String uuid;
+
+  @Getter
+  @Setter
+  @Nonnull
+  private String letters;
+
+  @Getter
+  @Setter
+  @Nonnull
+  private String number;
 
   @Getter
   @Setter
@@ -36,16 +51,20 @@ public class Course {
 
   @Getter
   @Setter
-  private List<String> prerequisites;
+  @OneToMany(cascade = CascadeType.ALL)
+  private List<Course> prerequisites = new ArrayList<>();
 
-  public Course(String name, int courseIndex, Status status) {
-    this.name = name;
+  public Course(String uuid, String letters, String number, int courseIndex) {
+    this.uuid = uuid;
+    this.letters = letters;
+    this.number = number;
     this.courseIndex = courseIndex;
-    this.status = status;
   }
 
-  public Course(String name) {
-    this.name = name;
+  public Course(String uuid, String letters, String number) {
+    this.uuid = uuid;
+    this.letters = letters;
+    this.number = number;
   }
 
   public Course() {}

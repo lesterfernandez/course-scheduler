@@ -13,5 +13,8 @@
     "postinstall": "husky install",
     "prepack": "pinst --disable",
     "postpack": "pinst --enable"
+  },
+  "dependencies": {
+    "nanoid": "^4.0.2"
   }
 }

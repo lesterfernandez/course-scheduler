@@ -1626,15 +1626,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@hookform/resolvers@npm:^3.0.0":
-  version: 3.0.0
-  resolution: "@hookform/resolvers@npm:3.0.0"
-  peerDependencies:
-    react-hook-form: ^7.0.0
-  checksum: 72c1282c1b847be074c5233e72f357de832eca41543bad9a2efb6279a14baa0bbbf55f0255e6d2dbcb34fbd07bb974f71e471e3cc89a138e001cf2ce5e28da76
-  languageName: node
-  linkType: hard
-
 "@humanwhocodes/config-array@npm:^0.11.8":
   version: 0.11.8
   resolution: "@humanwhocodes/config-array@npm:0.11.8"
@@ -2405,7 +2396,6 @@ __metadata:
     "@chakra-ui/react": ^2.5.4
     "@emotion/react": ^11.10.6
     "@emotion/styled": ^11.10.6
-    "@hookform/resolvers": ^3.0.0
     "@types/node": ^18.15.3
     "@types/react": ^18.0.27
     "@types/react-dom": ^18.0.10
@@ -2542,6 +2532,7 @@ __metadata:
   resolution: "course-scheduler@workspace:."
   dependencies:
     husky: ^8.0.0
+    nanoid: ^4.0.2
     pinst: ^3.0.0
   languageName: unknown
   linkType: soft
@@ -4167,6 +4158,15 @@ __metadata:
   bin:
     nanoid: bin/nanoid.cjs
   checksum: 2fddd6dee994b7676f008d3ffa4ab16035a754f4bb586c61df5a22cf8c8c94017aadd360368f47d653829e0569a92b129979152ff97af23a558331e47e37cd9c
+  languageName: node
+  linkType: hard
+
+"nanoid@npm:^4.0.2":
+  version: 4.0.2
+  resolution: "nanoid@npm:4.0.2"
+  bin:
+    nanoid: bin/nanoid.js
+  checksum: 747c399cea4664dd0be1d0ec498ffd1ef8f1f5221676fc8b577e3f46f66d9afcddb9595d63d19a2e78d0bc6cc33984f65e66bf1682c850b9e26288883d96b53f
   languageName: node
   linkType: hard
 

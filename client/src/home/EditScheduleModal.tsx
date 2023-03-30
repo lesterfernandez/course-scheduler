@@ -6,8 +6,8 @@ import {
   FormErrorMessage,
   FormLabel,
   Grid,
-  Heading,
   HStack,
+  Heading,
   IconButton,
   Input,
   Modal,
@@ -23,12 +23,16 @@ import { Select } from "chakra-react-select";
 import { createContext, useContext, useEffect, useState } from "react";
 import {
   SubmitHandler,
-  useFieldArray,
   UseFieldArrayReturn,
-  useForm,
   UseFormReturn,
+  useFieldArray,
+  useForm,
 } from "react-hook-form";
-import { Schedule, useScheduleStore } from "./schedule-store";
+import {
+  Schedule,
+  defaultCourseValue,
+  useScheduleStore,
+} from "./schedule-store";
 
 interface Props {
   isModalOpen: boolean;
@@ -70,10 +74,10 @@ const EditScheduleModal = ({ isModalOpen, toggleModal }: Props) => {
   };
 
   const submitForm: SubmitHandler<Schedule> = ({ courses: newCourses }) => {
-    const cleanedCourses = newCourses.map(course => ({
-      letters: course.letters.trim().toUpperCase().replaceAll(" ", ""),
-      number: course.number.trim().toUpperCase().replaceAll(" ", ""),
-      status: course.status,
+    const cleanedCourses = newCourses.map(({ letters, number, ...props }) => ({
+      letters: letters.trim().toUpperCase().replaceAll(" ", ""),
+      number: number.trim().toUpperCase().replaceAll(" ", ""),
+      ...props,
     }));
     useScheduleStore.setState({ courses: cleanedCourses });
   };
@@ -191,7 +195,7 @@ const CoursesForm = () => {
         <Button
           rightIcon={<AddIcon />}
           onClick={() => {
-            append({ letters: "", number: "", status: "AVAILABLE" });
+            append(structuredClone(defaultCourseValue));
           }}
           mr="auto"
         >
@@ -231,8 +235,8 @@ const CoursesForm = () => {
 
 const PrerequisitesForm = () => {
   const {
-    fieldArrayMethods: { fields },
     methods: { handleSubmit },
+    fieldArrayMethods: { fields },
     onClose,
     submitForm,
     setStep,

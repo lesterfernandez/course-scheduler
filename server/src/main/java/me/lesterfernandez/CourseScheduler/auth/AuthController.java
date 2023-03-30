@@ -3,6 +3,7 @@ package me.lesterfernandez.CourseScheduler.auth;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -11,11 +12,12 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.AllArgsConstructor;
 import lombok.Data;
-import me.lesterfernandez.CourseScheduler.course.Course;
-import me.lesterfernandez.CourseScheduler.schedule.Schedule;
+import me.lesterfernandez.CourseScheduler.course.CourseDto;
+import me.lesterfernandez.CourseScheduler.schedule.ScheduleDto;
 import me.lesterfernandez.CourseScheduler.schedule.ScheduleService;
 import me.lesterfernandez.CourseScheduler.user.UserEntity;
 import me.lesterfernandez.CourseScheduler.user.UserService;
@@ -53,13 +55,12 @@ public class AuthController {
       userService.save(user);
       String token = jwtComponent.generateToken(username);
 
-      RegisterResponseDto registerResponse =
-          new RegisterResponseDto(true, loginDto.getUsername(), token);
+      RegisterResponseDto registerResponse = new RegisterResponseDto(true, loginDto.getUsername(), token);
       return ResponseEntity.ok().body(registerResponse);
     } catch (Exception e) {
       System.out.println(e.getMessage() + "\n" + Arrays.toString(e.getStackTrace()));
-      return new ResponseEntity<>(new ErrorResponseDto("Something went wrong!"),
-          HttpStatus.INTERNAL_SERVER_ERROR);
+      return new ResponseEntity<>(
+          new ErrorResponseDto("Something went wrong!"), HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
 
@@ -72,15 +73,16 @@ public class AuthController {
       }
 
       String username = authContext.getUsername();
-      Schedule schedule = scheduleService.getUserSchedule(username);
+      ScheduleDto schedule = scheduleService.getUserSchedule(username);
 
-      LoginResponseDto loginResponse = new LoginResponseDto(true, authContext.getUsername(),
-          authContext.getToken(), schedule.getCourses());
+      LoginResponseDto loginResponse = new LoginResponseDto(
+          true, authContext.getUsername(), authContext.getToken(), schedule.getCourses());
+
       return ResponseEntity.ok().body(loginResponse);
     } catch (Exception e) {
       System.out.println(e.getMessage() + "\n" + Arrays.toString(e.getStackTrace()));
-      return new ResponseEntity<>(new ErrorResponseDto("Something went wrong!"),
-          HttpStatus.INTERNAL_SERVER_ERROR);
+      return new ResponseEntity<>(
+          new ErrorResponseDto("Something went wrong!"), HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
 
@@ -95,16 +97,21 @@ public class AuthController {
 
       String token = jwtComponent.generateToken(user);
 
-      List<Course> userCourses =
-          user.getSchedule() == null ? new ArrayList<>() : user.getSchedule().getCourses();
+      List<CourseDto> userCourses = user.getSchedule() == null
+          ? new ArrayList<>()
+          : new ScheduleDto(user.getSchedule()).getCourses();
 
-      LoginResponseDto response =
-          new LoginResponseDto(true, user.getUsername(), token, userCourses);
+      LoginResponseDto response = new LoginResponseDto(
+          true,
+          user.getUsername(),
+          token,
+          userCourses);
+
       return ResponseEntity.ok().body(response);
     } catch (Exception e) {
       System.out.println(e.getMessage() + "\n" + Arrays.toString(e.getStackTrace()));
-      return new ResponseEntity<>(new ErrorResponseDto("Something went wrong!"),
-          HttpStatus.INTERNAL_SERVER_ERROR);
+      return new ResponseEntity<>(
+          new ErrorResponseDto("Something went wrong!"), HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
 
@@ -121,9 +128,8 @@ public class AuthController {
     private boolean loggedIn;
     private String username;
     private String token;
-    private List<Course> courses;
+    private List<CourseDto> courses;
   }
-
 
   @Data
   @AllArgsConstructor

@@ -2,8 +2,10 @@ package me.lesterfernandez.CourseScheduler.schedule;
 
 import java.util.List;
 import java.util.Optional;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
 import me.lesterfernandez.CourseScheduler.course.Course;
 import me.lesterfernandez.CourseScheduler.user.UserEntity;
 import me.lesterfernandez.CourseScheduler.user.UserRepository;
@@ -21,12 +23,12 @@ public class ScheduleService {
     return scheduleRepository.findById(scheduleId);
   }
 
-  public Schedule getUserSchedule(String username) {
-    Schedule userSchedule = scheduleRepository.findByUserUsername(username);
-    if (userSchedule == null) {
-      return new Schedule();
+  public ScheduleDto getUserSchedule(String username) {
+    Schedule schedule = scheduleRepository.findByUserUsername(username);
+    if (schedule == null) {
+      return new ScheduleDto();
     }
-    return userSchedule;
+    return new ScheduleDto(schedule);
   }
 
   public void setUserSchedule(Schedule schedule, UserEntity user) {
@@ -48,5 +50,4 @@ public class ScheduleService {
     }
     courses.sort((a, b) -> a.getCourseIndex() - b.getCourseIndex());
   }
-
 }
