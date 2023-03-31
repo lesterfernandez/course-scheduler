@@ -2,9 +2,12 @@ package me.lesterfernandez.CourseScheduler.auth;
 
 import java.nio.charset.StandardCharsets;
 import java.util.Date;
+
 import javax.crypto.SecretKey;
+
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
+
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
@@ -14,8 +17,8 @@ import me.lesterfernandez.CourseScheduler.user.UserEntity;
 public class JwtComponent {
 
   public static final long JWT_TOKEN_VALIDITY = 60 * 60 * 24;
-  private final static SecretKey JWT_SECRET =
-      Keys.hmacShaKeyFor("secret............................".getBytes(StandardCharsets.UTF_8));
+  private final static SecretKey JWT_SECRET = Keys
+      .hmacShaKeyFor("secret............................".getBytes(StandardCharsets.UTF_8));
 
   public String getUsernameFromToken(String token) {
     return getTokenClaims(token).getSubject();
@@ -57,6 +60,5 @@ public class JwtComponent {
   public boolean validateToken(String token) {
     return (StringUtils.hasText(token) && !isTokenExpired(token));
   }
-
 
 }

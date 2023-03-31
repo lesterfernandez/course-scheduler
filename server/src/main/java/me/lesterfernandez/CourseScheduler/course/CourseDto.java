@@ -6,11 +6,13 @@ import java.util.List;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 import me.lesterfernandez.CourseScheduler.course.Course.Status;
 
 @Getter
 @Setter
+@NoArgsConstructor
 public class CourseDto {
   private String uuid;
 

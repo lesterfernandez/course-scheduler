@@ -6,8 +6,8 @@ import {
   FormErrorMessage,
   FormLabel,
   Grid,
-  HStack,
   Heading,
+  HStack,
   IconButton,
   Input,
   Modal,
@@ -22,15 +22,19 @@ import {
 import { Select } from "chakra-react-select";
 import { createContext, useContext, useEffect, useState } from "react";
 import {
+  Controller,
   SubmitHandler,
-  UseFieldArrayReturn,
-  UseFormReturn,
   useFieldArray,
+  UseFieldArrayReturn,
   useForm,
+  UseFormReturn,
+  useWatch,
 } from "react-hook-form";
+import { useAuthStore } from "../auth/auth-store";
 import {
+  Course,
+  generateEmptyCourse,
   Schedule,
-  defaultCourseValue,
   useScheduleStore,
 } from "./schedule-store";
 
@@ -42,8 +46,9 @@ interface Props {
 interface EditScheduleContext {
   methods: UseFormReturn<Schedule>;
   fieldArrayMethods: UseFieldArrayReturn<Schedule, "courses">;
-  submitForm: SubmitHandler<Schedule>;
+  saveForm: SubmitHandler<Schedule>;
   setStep: React.Dispatch<React.SetStateAction<number>>;
+  submitForm: (schedule: Schedule) => void;
   onClose: () => void;
   toggleModal: () => void;
 }
@@ -54,6 +59,7 @@ const EditScheduleModal = ({ isModalOpen, toggleModal }: Props) => {
   const [step, setStep] = useState(0);
 
   const { courses } = useScheduleStore();
+  const { token } = useAuthStore();
 
   const methods = useForm<Schedule>({ defaultValues: { courses } });
   const {
@@ -73,13 +79,26 @@ const EditScheduleModal = ({ isModalOpen, toggleModal }: Props) => {
     reset({ courses });
   };
 
-  const submitForm: SubmitHandler<Schedule> = ({ courses: newCourses }) => {
+  const saveForm: SubmitHandler<Schedule> = ({ courses: newCourses }) => {
     const cleanedCourses = newCourses.map(({ letters, number, ...props }) => ({
       letters: letters.trim().toUpperCase().replaceAll(" ", ""),
       number: number.trim().toUpperCase().replaceAll(" ", ""),
       ...props,
     }));
     useScheduleStore.setState({ courses: cleanedCourses });
+  };
+
+  const submitForm = async (schedule: Schedule) => {
+    const response = await fetch("http://localhost:8080/api/schedule", {
+      method: "POST",
+      body: JSON.stringify(schedule),
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
+    });
+    const responseData = await response.json();
+    console.log(responseData);
   };
 
   useEffect(() => {
@@ -101,6 +120,7 @@ const EditScheduleModal = ({ isModalOpen, toggleModal }: Props) => {
             fieldArrayMethods,
             onClose,
             setStep,
+            saveForm,
             submitForm,
             toggleModal,
           }}
@@ -123,6 +143,7 @@ const CoursesForm = () => {
       formState: { errors },
     },
     onClose,
+    saveForm,
     submitForm,
     setStep,
     toggleModal,
@@ -195,7 +216,7 @@ const CoursesForm = () => {
         <Button
           rightIcon={<AddIcon />}
           onClick={() => {
-            append(structuredClone(defaultCourseValue));
+            append(generateEmptyCourse());
           }}
           mr="auto"
         >
@@ -209,7 +230,7 @@ const CoursesForm = () => {
             colorScheme="blue"
             mr={3}
             onClick={handleSubmit(data => {
-              submitForm(data);
+              saveForm(data);
               setStep(1);
             })}
             isDisabled={fields.length === 0}
@@ -222,6 +243,7 @@ const CoursesForm = () => {
             mr={3}
             onClick={handleSubmit(data => {
               submitForm(data);
+              saveForm(data);
               toggleModal();
             })}
           >
@@ -235,13 +257,18 @@ const CoursesForm = () => {
 
 const PrerequisitesForm = () => {
   const {
-    methods: { handleSubmit },
-    fieldArrayMethods: { fields },
+    methods: { handleSubmit, control },
     onClose,
+    saveForm,
     submitForm,
     setStep,
     toggleModal,
   } = useContext(EditScheduleModalContext);
+
+  const courses = useWatch({
+    control,
+    name: "courses",
+  });
 
   return (
     <>
@@ -250,20 +277,45 @@ const PrerequisitesForm = () => {
 
       <ModalBody>
         <Grid gap="2rem">
-          {fields.map(field => (
-            <Box key={field.id}>
+          {courses.map((field, i) => (
+            <Box key={field.uuid}>
               <Heading size="md" py="2">
                 {field.letters + field.number}
               </Heading>
-              <Select
-                options={fields
-                  .filter(f => f.id !== field.id)
-                  .map(f => ({
-                    value: f.letters + f.number,
-                    label: f.letters + f.number,
-                  }))}
-                isMulti
-                isClearable={false}
+
+              <Controller
+                name={`courses.${i}.prerequisites` as const}
+                control={control}
+                render={({ field: { onChange, value } }) => (
+                  <Select
+                    options={courses
+                      .filter(
+                        otherCourse =>
+                          otherCourse.uuid !== field.uuid &&
+                          !otherCourse.prerequisites.includes(field.uuid)
+                      )
+                      .map(({ uuid, letters, number }) => ({
+                        value: uuid,
+                        label: letters + number,
+                      }))}
+                    isMulti
+                    isClearable={false}
+                    value={value.map(courseId => {
+                      const { uuid, letters, number } = courses.find(
+                        otherCourse => otherCourse.uuid === courseId
+                      ) as Course;
+                      return {
+                        value: uuid,
+                        label: letters + number,
+                      };
+                    })}
+                    onChange={selections =>
+                      void onChange(
+                        selections.map(selection => selection.value)
+                      )
+                    }
+                  />
+                )}
               />
             </Box>
           ))}
@@ -286,6 +338,7 @@ const PrerequisitesForm = () => {
           mr={3}
           onClick={handleSubmit(data => {
             submitForm(data);
+            saveForm(data);
             toggleModal();
             setStep(0);
           })}

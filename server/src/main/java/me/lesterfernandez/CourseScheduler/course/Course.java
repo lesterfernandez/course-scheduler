@@ -2,6 +2,9 @@ package me.lesterfernandez.CourseScheduler.course;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import jakarta.annotation.Nonnull;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
@@ -11,46 +14,41 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.OneToMany;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+@Getter
+@Setter
 @Entity
+@NoArgsConstructor
+@AllArgsConstructor
 public class Course {
 
-  public enum Status {
+  public static enum Status {
     IN_PROGRESS, AVAILABLE,
   }
 
   @Id
   @GeneratedValue(strategy = GenerationType.AUTO)
+  @JsonIgnore
   private Long id;
 
-  @Getter
-  @Setter
   @Nonnull
   private String uuid;
 
-  @Getter
-  @Setter
   @Nonnull
   private String letters;
 
-  @Getter
-  @Setter
   @Nonnull
   private String number;
 
-  @Getter
-  @Setter
   private int courseIndex;
 
-  @Getter
-  @Setter
   @Enumerated(EnumType.STRING)
   private Status status = Status.AVAILABLE;
 
-  @Getter
-  @Setter
   @OneToMany(cascade = CascadeType.ALL)
   private List<Course> prerequisites = new ArrayList<>();
 
@@ -66,6 +64,4 @@ public class Course {
     this.letters = letters;
     this.number = number;
   }
-
-  public Course() {}
 }

@@ -2,7 +2,9 @@ package me.lesterfernandez.CourseScheduler.schedule;
 
 import java.util.ArrayList;
 import java.util.List;
+
 import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -11,6 +13,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.OneToOne;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.NonNull;
 import lombok.Setter;
 import lombok.ToString;
@@ -21,6 +24,7 @@ import me.lesterfernandez.CourseScheduler.user.UserEntity;
 @ToString
 @Getter
 @Setter
+@NoArgsConstructor
 public class Schedule {
 
   @Id
@@ -41,8 +45,6 @@ public class Schedule {
     this.courses = courses;
     this.user = user;
   }
-
-  public Schedule() {}
 
   public Schedule(List<Course> courses) {
     this.courses = courses;

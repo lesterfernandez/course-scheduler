@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.RestController;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 import me.lesterfernandez.CourseScheduler.course.CourseDto;
 import me.lesterfernandez.CourseScheduler.schedule.ScheduleDto;
 import me.lesterfernandez.CourseScheduler.schedule.ScheduleService;
@@ -116,6 +117,7 @@ public class AuthController {
   }
 
   @Data
+  @NoArgsConstructor
   @AllArgsConstructor
   public static class LoginDto {
     private String username;

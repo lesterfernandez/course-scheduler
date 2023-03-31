@@ -18,14 +18,14 @@ export const scheduleSchema = z.object({
 export type Schedule = z.infer<typeof scheduleSchema>;
 export type Course = Schedule["courses"][number];
 
-export const defaultCourseValue: Course = {
+export const generateEmptyCourse = (): Course => ({
   letters: "",
   number: "",
   status: "AVAILABLE",
   prerequisites: [],
   uuid: nanoid(12),
   courseIndex: -1,
-};
+});
 
 export const useScheduleStore = create<Schedule>(() => ({
   courses: [],
