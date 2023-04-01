@@ -13,8 +13,9 @@ import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.persistence.OneToMany;
+import jakarta.persistence.ManyToMany;
 import lombok.AllArgsConstructor;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -24,6 +25,7 @@ import lombok.Setter;
 @Entity
 @NoArgsConstructor
 @AllArgsConstructor
+@EqualsAndHashCode(onlyExplicitlyIncluded = true)
 public class Course {
 
   public static enum Status {
@@ -36,6 +38,7 @@ public class Course {
   private Long id;
 
   @Nonnull
+  @EqualsAndHashCode.Include
   private String uuid;
 
   @Nonnull
@@ -49,7 +52,7 @@ public class Course {
   @Enumerated(EnumType.STRING)
   private Status status = Status.AVAILABLE;
 
-  @OneToMany(cascade = CascadeType.ALL)
+  @ManyToMany(cascade = CascadeType.ALL)
   private List<Course> prerequisites = new ArrayList<>();
 
   public Course(String uuid, String letters, String number, int courseIndex) {
@@ -63,5 +66,9 @@ public class Course {
     this.uuid = uuid;
     this.letters = letters;
     this.number = number;
+  }
+
+  public String toString() {
+    return "uuid=" + uuid + ", letters=" + letters + ", number=" + number;
   }
 }

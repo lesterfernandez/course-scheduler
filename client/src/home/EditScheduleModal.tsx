@@ -32,9 +32,9 @@ import {
 } from "react-hook-form";
 import { useAuthStore } from "../auth/auth-store";
 import {
-  Course,
   generateEmptyCourse,
   Schedule,
+  scheduleSchema,
   useScheduleStore,
 } from "./schedule-store";
 
@@ -64,6 +64,7 @@ const EditScheduleModal = ({ isModalOpen, toggleModal }: Props) => {
   const methods = useForm<Schedule>({ defaultValues: { courses } });
   const {
     formState: { isSubmitSuccessful },
+    setError,
     control,
     reset,
   } = methods;
@@ -89,16 +90,25 @@ const EditScheduleModal = ({ isModalOpen, toggleModal }: Props) => {
   };
 
   const submitForm = async (schedule: Schedule) => {
-    const response = await fetch("http://localhost:8080/api/schedule", {
-      method: "POST",
-      body: JSON.stringify(schedule),
-      headers: {
-        Authorization: `Bearer ${token}`,
-        "Content-Type": "application/json",
-      },
-    });
-    const responseData = await response.json();
-    console.log(responseData);
+    try {
+      const response = await fetch("http://localhost:8080/api/schedule", {
+        method: "POST",
+        body: JSON.stringify(schedule),
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      });
+      const responseData = await response.json();
+      const newSchedule = scheduleSchema.parse(responseData);
+      useScheduleStore.setState(newSchedule);
+      console.log(newSchedule);
+    } catch (error) {
+      if (error instanceof Error) {
+        setError("root", error);
+      }
+      console.log(error);
+    }
   };
 
   useEffect(() => {
@@ -153,63 +163,65 @@ const CoursesForm = () => {
     <>
       <ModalHeader fontSize="2xl">Add Courses</ModalHeader>
       <ModalCloseButton size="lg" />
-
       <ModalBody>
-        <Grid gap="2rem">
-          {fields.length ? (
-            fields.map((field, i) => (
-              <Box key={field.id}>
-                <HStack justify="space-between" align="end">
-                  <Heading size="md" py="2">
-                    {field.letters + field.number || "New Course"}
-                  </Heading>
-                  <IconButton
-                    icon={<DeleteIcon />}
-                    aria-label="Delete course"
-                    onClick={() => void remove(i)}
-                    size="sm"
-                  />
-                </HStack>
+        <>
+          <Text color="red.200">{errors?.root?.message}</Text>
+          <Grid gap="2rem">
+            {fields.length ? (
+              fields.map((field, i) => (
+                <Box key={field.id}>
+                  <HStack justify="space-between" align="end">
+                    <Heading size="md" py="2">
+                      {field.letters + field.number || "New Course"}
+                    </Heading>
+                    <IconButton
+                      icon={<DeleteIcon />}
+                      aria-label="Delete course"
+                      onClick={() => void remove(i)}
+                      size="sm"
+                    />
+                  </HStack>
 
-                <FormControl
-                  isInvalid={
-                    !!(errors.courses && errors.courses[i]?.letters?.message)
-                  }
-                >
-                  <FormLabel>Course Subject Code</FormLabel>
-                  <Input
-                    {...register(`courses.${i}.letters` as const, {
-                      required: "Course Subject Code is required",
-                    })}
-                  />
-                  <FormErrorMessage>
-                    {errors.courses && errors.courses[i]?.letters?.message}
-                  </FormErrorMessage>
-                </FormControl>
+                  <FormControl
+                    isInvalid={
+                      !!(errors.courses && errors.courses[i]?.letters?.message)
+                    }
+                  >
+                    <FormLabel>Course Subject Code</FormLabel>
+                    <Input
+                      {...register(`courses.${i}.letters` as const, {
+                        required: "Course Subject Code is required",
+                      })}
+                    />
+                    <FormErrorMessage>
+                      {errors.courses && errors.courses[i]?.letters?.message}
+                    </FormErrorMessage>
+                  </FormControl>
 
-                <FormControl
-                  isInvalid={
-                    !!(errors.courses && errors.courses[i]?.number?.message)
-                  }
-                >
-                  <FormLabel>Course Number</FormLabel>
-                  <Input
-                    {...register(`courses.${i}.number` as const, {
-                      required: "Course Number is required",
-                    })}
-                  />
-                  <FormErrorMessage>
-                    {errors.courses && errors.courses[i]?.number?.message}
-                  </FormErrorMessage>
-                </FormControl>
-              </Box>
-            ))
-          ) : (
-            <Text textAlign="center">
-              Empty schedule. Click 'Add Course' to begin creating a schedule.
-            </Text>
-          )}
-        </Grid>
+                  <FormControl
+                    isInvalid={
+                      !!(errors.courses && errors.courses[i]?.number?.message)
+                    }
+                  >
+                    <FormLabel>Course Number</FormLabel>
+                    <Input
+                      {...register(`courses.${i}.number` as const, {
+                        required: "Course Number is required",
+                      })}
+                    />
+                    <FormErrorMessage>
+                      {errors.courses && errors.courses[i]?.number?.message}
+                    </FormErrorMessage>
+                  </FormControl>
+                </Box>
+              ))
+            ) : (
+              <Text textAlign="center">
+                Empty schedule. Click 'Add Course' to begin creating a schedule.
+              </Text>
+            )}
+          </Grid>
+        </>
       </ModalBody>
 
       <ModalFooter gap="1">
@@ -257,7 +269,11 @@ const CoursesForm = () => {
 
 const PrerequisitesForm = () => {
   const {
-    methods: { handleSubmit, control },
+    methods: {
+      handleSubmit,
+      control,
+      formState: { errors },
+    },
     onClose,
     saveForm,
     submitForm,
@@ -276,50 +292,59 @@ const PrerequisitesForm = () => {
       <ModalCloseButton size="lg" />
 
       <ModalBody>
-        <Grid gap="2rem">
-          {courses.map((field, i) => (
-            <Box key={field.uuid}>
-              <Heading size="md" py="2">
-                {field.letters + field.number}
-              </Heading>
+        <>
+          <Text color="red.200">{errors?.root?.message}</Text>
+          <Grid gap="2rem">
+            {courses.map((field, i) => (
+              <Box key={field.uuid}>
+                <Heading size="md" py="2">
+                  {field.letters + field.number}
+                </Heading>
 
-              <Controller
-                name={`courses.${i}.prerequisites` as const}
-                control={control}
-                render={({ field: { onChange, value } }) => (
-                  <Select
-                    options={courses
-                      .filter(
-                        otherCourse =>
-                          otherCourse.uuid !== field.uuid &&
-                          !otherCourse.prerequisites.includes(field.uuid)
-                      )
+                <Controller
+                  name={`courses.${i}.prerequisites` as const}
+                  control={control}
+                  render={({ field: { onChange, value, ref, name } }) => {
+                    const options = courses
+                      .filter(otherCourse => otherCourse.uuid !== field.uuid)
                       .map(({ uuid, letters, number }) => ({
                         value: uuid,
                         label: letters + number,
-                      }))}
-                    isMulti
-                    isClearable={false}
-                    value={value.map(courseId => {
-                      const { uuid, letters, number } = courses.find(
+                      }));
+
+                    const selectValues = value.map(courseId => {
+                      const selfValue = courses.find(
                         otherCourse => otherCourse.uuid === courseId
-                      ) as Course;
-                      return {
-                        value: uuid,
-                        label: letters + number,
-                      };
-                    })}
-                    onChange={selections =>
-                      void onChange(
-                        selections.map(selection => selection.value)
-                      )
-                    }
-                  />
-                )}
-              />
-            </Box>
-          ))}
-        </Grid>
+                      );
+                      return selfValue
+                        ? {
+                            value: selfValue.uuid,
+                            label: selfValue.letters + selfValue.number,
+                          }
+                        : selfValue;
+                    });
+
+                    return (
+                      <Select
+                        name={name}
+                        ref={ref}
+                        isMulti
+                        isClearable={false}
+                        options={options}
+                        value={selectValues}
+                        onChange={selections =>
+                          void onChange(
+                            selections.map(selection => selection?.value)
+                          )
+                        }
+                      />
+                    );
+                  }}
+                />
+              </Box>
+            ))}
+          </Grid>
+        </>
       </ModalBody>
 
       <ModalFooter gap="1">

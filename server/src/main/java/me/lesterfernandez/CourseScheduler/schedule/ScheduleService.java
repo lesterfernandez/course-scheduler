@@ -1,9 +1,12 @@
 package me.lesterfernandez.CourseScheduler.schedule;
 
+import java.util.ArrayDeque;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Queue;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -11,7 +14,7 @@ import org.springframework.stereotype.Service;
 import me.lesterfernandez.CourseScheduler.course.Course;
 import me.lesterfernandez.CourseScheduler.course.CourseDto;
 import me.lesterfernandez.CourseScheduler.user.UserEntity;
-import me.lesterfernandez.CourseScheduler.user.UserRepository;
+import me.lesterfernandez.CourseScheduler.user.UserService;
 
 @Service
 public class ScheduleService {
@@ -20,7 +23,7 @@ public class ScheduleService {
   private ScheduleRepository scheduleRepository;
 
   @Autowired
-  private UserRepository userRepository;
+  private UserService userService;
 
   public Optional<Schedule> getUserSchedule(long scheduleId) {
     return scheduleRepository.findById(scheduleId);
@@ -31,10 +34,11 @@ public class ScheduleService {
     if (schedule == null) {
       return new ScheduleDto();
     }
+    schedule.getCourses().sort((a, b) -> a.getCourseIndex() - b.getCourseIndex());
     return new ScheduleDto(schedule);
   }
 
-  public void setUserSchedule(ScheduleDto scheduleDto, UserEntity user) {
+  public ScheduleDto setUserSchedule(ScheduleDto scheduleDto, UserEntity user) {
     Schedule schedule = new Schedule();
     List<Course> courses = schedule.getCourses();
     List<CourseDto> courseDtos = scheduleDto.getCourses();
@@ -59,26 +63,82 @@ public class ScheduleService {
       });
     });
 
-    // always replace student schedule
-    // it would be ideal to update without deleting
     if (user.getSchedule() != null) {
       schedule.setId(user.getSchedule().getId());
       scheduleRepository.delete(user.getSchedule());
     }
 
     orderCourses(schedule);
-
     user.setSchedule(schedule);
     schedule.setUser(user);
-    userRepository.save(user);
+    userService.save(user);
+
+    return new ScheduleDto(schedule);
   }
 
   private void orderCourses(Schedule userSchedule) {
-    List<Course> courses = userSchedule.getCourses();
-    for (int i = 0; i < courses.size(); i++) {
-      Course course = courses.get(i);
-      course.setCourseIndex(i);
+    List<Course> nodes = userSchedule.getCourses();
+
+    DiGraph<Course> scheduleGraph = new DiGraph<>(nodes);
+    List<Course> sortedCourses = new ArrayList<>();
+    Queue<Course> available = new ArrayDeque<>();
+    Map<Course, Integer> inDegreeMap = new HashMap<>();
+
+    nodes.forEach(node -> {
+      int inDegree = 0;
+      for (Course prereq : node.getPrerequisites()) {
+        scheduleGraph.addEdge(prereq, node);
+        inDegree++;
+      }
+      inDegreeMap.put(node, inDegree);
+      if (inDegree == 0) {
+        available.add(node);
+      }
+    });
+
+    // A variant of Topological Sort
+    while (!available.isEmpty()) {
+      Course current = available.remove();
+      sortedCourses.add(current);
+      List<Course> neighbors = scheduleGraph.getNeighbors(current);
+      neighbors.forEach(neighbor -> {
+        int inDegree = inDegreeMap.get(neighbor) - 1;
+        inDegreeMap.put(neighbor, inDegree);
+        if (inDegree == 0) {
+          available.add(neighbor);
+        }
+      });
     }
-    courses.sort((a, b) -> a.getCourseIndex() - b.getCourseIndex());
+
+    for (int i = 0; i < sortedCourses.size(); i++) {
+      System.out.println(sortedCourses.get(i));
+      sortedCourses.get(i).setCourseIndex(i);
+    }
+    userSchedule.setCourses(sortedCourses);
+  }
+
+  /***
+   * A very rudimentary Directed Graph.
+   * It has only the minimum functionality for my use case.
+   * In reality, a lot more could be added here.
+   **/
+  private static class DiGraph<T> {
+    private Map<T, List<T>> graph = new HashMap<>();
+
+    public DiGraph(List<T> nodes) {
+      for (T node : nodes) {
+        graph.put(node, new ArrayList<>());
+      }
+    }
+
+    public void addEdge(T from, T to) {
+      List<T> adjacent = graph.getOrDefault(from, new ArrayList<>());
+      adjacent.add(to);
+      graph.put(from, adjacent);
+    }
+
+    public List<T> getNeighbors(T node) {
+      return graph.get(node);
+    }
   }
 }

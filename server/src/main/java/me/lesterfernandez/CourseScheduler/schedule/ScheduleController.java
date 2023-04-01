@@ -34,7 +34,7 @@ public class ScheduleController {
   @PostMapping
   public ResponseEntity<ScheduleDto> setUserSchedule(@RequestBody ScheduleDto scheduleDto) {
     UserEntity user = userService.findByUsername(authContext.getUsername());
-    scheduleService.setUserSchedule(scheduleDto, user);
-    return new ResponseEntity<>(scheduleDto, HttpStatus.CREATED);
+    ScheduleDto newSchedule = scheduleService.setUserSchedule(scheduleDto, user);
+    return new ResponseEntity<>(newSchedule, HttpStatus.CREATED);
   }
 }

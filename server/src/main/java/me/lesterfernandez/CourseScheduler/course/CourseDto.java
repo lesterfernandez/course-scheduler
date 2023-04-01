@@ -5,6 +5,8 @@ import java.util.List;
 
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -12,7 +14,9 @@ import me.lesterfernandez.CourseScheduler.course.Course.Status;
 
 @Getter
 @Setter
+@Builder
 @NoArgsConstructor
+@AllArgsConstructor
 public class CourseDto {
   private String uuid;
 
@@ -23,8 +27,10 @@ public class CourseDto {
   private int courseIndex;
 
   @Enumerated(EnumType.STRING)
+  @Builder.Default()
   private Status status = Status.AVAILABLE;
 
+  @Builder.Default()
   private List<String> prerequisites = new ArrayList<>();
 
   public CourseDto(Course course) {
@@ -32,6 +38,7 @@ public class CourseDto {
     this.letters = course.getLetters();
     this.number = course.getNumber();
     this.status = course.getStatus();
+    this.courseIndex = course.getCourseIndex();
     this.prerequisites = course.getPrerequisites().stream().map(prereq -> prereq.getUuid()).toList();
   }
 }
