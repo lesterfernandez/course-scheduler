@@ -8,7 +8,7 @@ export const scheduleSchema = z.object({
       uuid: z.string(),
       letters: z.string(),
       number: z.string(),
-      status: z.enum(["AVAILABLE", "IN_PROGRESS"]),
+      status: z.enum(["AVAILABLE", "COMPLETED"]),
       courseIndex: z.number(),
       prerequisites: z.string().array(),
     })
@@ -27,6 +27,21 @@ export const generateEmptyCourse = (): Course => ({
   courseIndex: -1,
 });
 
-export const useScheduleStore = create<Schedule>(() => ({
+interface ScheduleStore {
+  courses: Course[];
+  setCourse: (newCourse: Course) => void;
+}
+
+export const useScheduleStore = create<ScheduleStore>(set => ({
   courses: [],
+  setCourse: (newCourse: Course) =>
+    set(state => {
+      const courseIndex = state.courses.findIndex(
+        course => course.uuid === newCourse.uuid
+      );
+      if (courseIndex === -1) return state;
+      const newCourses = structuredClone(state.courses);
+      newCourses[courseIndex] = structuredClone(newCourse);
+      return { ...state, courses: newCourses };
+    }),
 }));

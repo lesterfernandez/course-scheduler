@@ -29,6 +29,7 @@ const eslintJsConfig = {
     camelcase: "off",
     "no-use-before-define": "off",
     "no-void": "off",
+    "no-continue": "off",
     "import/no-named-as-default": "off",
     "import/no-extraneous-dependencies": "off",
     "import/prefer-default-export": "off",

@@ -58,7 +58,7 @@ const EditScheduleModalContext = createContext({} as EditScheduleContext);
 const EditScheduleModal = ({ isModalOpen, toggleModal }: Props) => {
   const [step, setStep] = useState(0);
 
-  const { courses } = useScheduleStore();
+  const courses = useScheduleStore(state => state.courses);
   const { token } = useAuthStore();
 
   const methods = useForm<Schedule>({ defaultValues: { courses } });

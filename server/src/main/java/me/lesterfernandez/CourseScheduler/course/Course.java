@@ -29,7 +29,7 @@ import lombok.Setter;
 public class Course {
 
   public static enum Status {
-    IN_PROGRESS, AVAILABLE,
+    AVAILABLE, COMPLETED
   }
 
   @Id
