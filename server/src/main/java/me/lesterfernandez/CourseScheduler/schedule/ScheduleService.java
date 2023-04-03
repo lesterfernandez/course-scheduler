@@ -76,7 +76,7 @@ public class ScheduleService {
     return new ScheduleDto(schedule);
   }
 
-  private void orderCourses(Schedule userSchedule) {
+  private void orderCourses(Schedule userSchedule) throws IllegalArgumentException {
     List<Course> nodes = userSchedule.getCourses();
 
     DiGraph<Course> scheduleGraph = new DiGraph<>(nodes);
@@ -108,6 +108,10 @@ public class ScheduleService {
           available.add(neighbor);
         }
       });
+    }
+
+    if (sortedCourses.size() != nodes.size()) {
+      throw new IllegalArgumentException("Prerequisite cycle detected!");
     }
 
     for (int i = 0; i < sortedCourses.size(); i++) {

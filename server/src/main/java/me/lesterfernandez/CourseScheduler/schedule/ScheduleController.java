@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.RestController;
 import me.lesterfernandez.CourseScheduler.auth.AuthContext;
 import me.lesterfernandez.CourseScheduler.user.UserEntity;
 import me.lesterfernandez.CourseScheduler.user.UserService;
+import me.lesterfernandez.CourseScheduler.utils.ErrorResponseDto;
 
 @RestController
 @RequestMapping("/api/schedule")
@@ -32,9 +33,13 @@ public class ScheduleController {
   }
 
   @PostMapping
-  public ResponseEntity<ScheduleDto> setUserSchedule(@RequestBody ScheduleDto scheduleDto) {
-    UserEntity user = userService.findByUsername(authContext.getUsername());
-    ScheduleDto newSchedule = scheduleService.setUserSchedule(scheduleDto, user);
-    return new ResponseEntity<>(newSchedule, HttpStatus.CREATED);
+  public ResponseEntity<?> setUserSchedule(@RequestBody ScheduleDto scheduleDto) {
+    try {
+      UserEntity user = userService.findByUsername(authContext.getUsername());
+      ScheduleDto newSchedule = scheduleService.setUserSchedule(scheduleDto, user);
+      return new ResponseEntity<>(newSchedule, HttpStatus.CREATED);
+    } catch (IllegalArgumentException e) {
+      return new ResponseEntity<>(new ErrorResponseDto(e.getMessage()), HttpStatus.BAD_REQUEST);
+    }
   }
 }

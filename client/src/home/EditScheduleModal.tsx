@@ -48,7 +48,7 @@ interface EditScheduleContext {
   fieldArrayMethods: UseFieldArrayReturn<Schedule, "courses">;
   saveForm: SubmitHandler<Schedule>;
   setStep: React.Dispatch<React.SetStateAction<number>>;
-  submitForm: (schedule: Schedule) => void;
+  submitForm: (schedule: Schedule) => Promise<void>;
   onClose: () => void;
   toggleModal: () => void;
 }
@@ -64,7 +64,6 @@ const EditScheduleModal = ({ isModalOpen, toggleModal }: Props) => {
   const methods = useForm<Schedule>({ defaultValues: { courses } });
   const {
     formState: { isSubmitSuccessful },
-    setError,
     control,
     reset,
   } = methods;
@@ -90,24 +89,24 @@ const EditScheduleModal = ({ isModalOpen, toggleModal }: Props) => {
   };
 
   const submitForm = async (schedule: Schedule) => {
-    try {
-      const response = await fetch("http://localhost:8080/api/schedule", {
-        method: "POST",
-        body: JSON.stringify(schedule),
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
-      });
-      const responseData = await response.json();
-      const newSchedule = scheduleSchema.parse(responseData);
-      useScheduleStore.setState(newSchedule);
-      console.log(newSchedule);
-    } catch (error) {
-      if (error instanceof Error) {
-        setError("root", error);
-      }
-      console.log(error);
+    const response = await fetch("http://localhost:8080/api/schedule", {
+      method: "POST",
+      body: JSON.stringify(schedule),
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
+    });
+    const responseData = await response.json();
+    if ("errorMessage" in responseData) {
+      throw new Error(responseData.errorMessage);
+    }
+    const parsedSchedule = scheduleSchema.safeParse(responseData);
+    console.log(parsedSchedule);
+    if (parsedSchedule.success) {
+      saveForm(parsedSchedule.data);
+    } else {
+      throw new Error("Something went wrong!");
     }
   };
 
@@ -151,6 +150,7 @@ const CoursesForm = () => {
       handleSubmit,
       register,
       formState: { errors },
+      setError,
     },
     onClose,
     saveForm,
@@ -253,10 +253,15 @@ const CoursesForm = () => {
           <Button
             colorScheme="blue"
             mr={3}
-            onClick={handleSubmit(data => {
-              submitForm(data);
-              saveForm(data);
-              toggleModal();
+            onClick={handleSubmit(async data => {
+              try {
+                await submitForm(data);
+                toggleModal();
+              } catch (error) {
+                setError("root", {
+                  message: (error as Error)?.message ?? "Something went wrong!",
+                });
+              }
             })}
           >
             Submit
@@ -273,9 +278,9 @@ const PrerequisitesForm = () => {
       handleSubmit,
       control,
       formState: { errors },
+      setError,
     },
     onClose,
-    saveForm,
     submitForm,
     setStep,
     toggleModal,
@@ -361,11 +366,17 @@ const PrerequisitesForm = () => {
         <Button
           colorScheme="blue"
           mr={3}
-          onClick={handleSubmit(data => {
-            submitForm(data);
-            saveForm(data);
-            toggleModal();
-            setStep(0);
+          onClick={handleSubmit(async data => {
+            try {
+              await submitForm(data);
+              setStep(0);
+              toggleModal();
+            } catch (error) {
+              console.log(error);
+              setError("root", {
+                message: (error as Error)?.message ?? "Something went wrong!",
+              });
+            }
           })}
         >
           Submit
