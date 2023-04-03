@@ -5,9 +5,29 @@ import {
   Text,
   useColorModeValue,
 } from "@chakra-ui/react";
-import { Course, useScheduleStore } from "./schedule-store";
+import { useAuthStore } from "../auth/auth-store";
+import { Course, scheduleSchema, useScheduleStore } from "./schedule-store";
+
+const submitCourses = async (courses: Course[], token: string) => {
+  try {
+    const response = await fetch("http://localhost:8080/api/schedule", {
+      method: "POST",
+      body: JSON.stringify({ courses }),
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
+    });
+    const responseData = await response.json();
+    const newSchedule = scheduleSchema.parse(responseData);
+    console.log(newSchedule);
+  } catch (error) {
+    console.log(error);
+  }
+};
 
 const Courses = () => {
+  const token = useAuthStore(store => store.token);
   const { courses, setCourse } = useScheduleStore();
   const courseBg = useColorModeValue("gray.100", "#343434");
 
@@ -55,15 +75,15 @@ const Courses = () => {
           newCourseMap.set(c.uuid, c);
         }
         uncompleteCourse(newCourse, newCourseMap);
-        // TODO: submit courses to backend
+        submitCourses(courses, token);
         useScheduleStore.setState({
           courses: newCourses,
         });
       } else {
         const newCourse = structuredClone(course);
         newCourse.status = newStatus;
+        submitCourses(courses, token);
         setCourse(newCourse);
-        // TODO: submit courses to backend
       }
     };
 
