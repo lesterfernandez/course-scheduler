@@ -149,7 +149,7 @@ const CoursesForm = () => {
     methods: {
       handleSubmit,
       register,
-      formState: { errors },
+      formState: { errors, isSubmitting },
       setError,
     },
     onClose,
@@ -253,6 +253,7 @@ const CoursesForm = () => {
           <Button
             colorScheme="blue"
             mr={3}
+            isLoading={isSubmitting}
             onClick={handleSubmit(async data => {
               try {
                 await submitForm(data);
@@ -277,7 +278,7 @@ const PrerequisitesForm = () => {
     methods: {
       handleSubmit,
       control,
-      formState: { errors },
+      formState: { errors, isSubmitting },
       setError,
     },
     onClose,
@@ -366,6 +367,7 @@ const PrerequisitesForm = () => {
         <Button
           colorScheme="blue"
           mr={3}
+          isLoading={isSubmitting}
           onClick={handleSubmit(async data => {
             try {
               await submitForm(data);
