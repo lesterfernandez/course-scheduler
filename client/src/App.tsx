@@ -1,5 +1,5 @@
 import {
-  createBrowserRouter,
+  createHashRouter,
   createRoutesFromElements,
   Route,
   RouterProvider,
@@ -10,7 +10,7 @@ import SignUp from "./auth/SignUp";
 import Root from "./home/Root";
 import ColorSwitch from "./ui/ColorSwitch";
 
-const browserRouter = createBrowserRouter(
+const browserRouter = createHashRouter(
   createRoutesFromElements(
     <>
       <Route element={<ProtectedRoutes />}>

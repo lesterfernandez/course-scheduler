@@ -55,11 +55,12 @@ public class Course {
   @ManyToMany(cascade = CascadeType.ALL)
   private List<Course> prerequisites = new ArrayList<>();
 
-  public Course(String uuid, String letters, String number, int courseIndex) {
+  public Course(String uuid, String letters, String number, int courseIndex, Status status) {
     this.uuid = uuid;
     this.letters = letters;
     this.number = number;
     this.courseIndex = courseIndex;
+    this.status = status;
   }
 
   public Course(String uuid, String letters, String number) {

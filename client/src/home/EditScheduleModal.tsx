@@ -237,7 +237,7 @@ const CoursesForm = () => {
         <Button variant="outline" onClick={onClose}>
           Cancel
         </Button>
-        {fields.length ? (
+        {fields.length > 1 ? (
           <Button
             colorScheme="blue"
             mr={3}

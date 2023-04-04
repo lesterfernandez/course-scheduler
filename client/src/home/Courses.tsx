@@ -20,7 +20,7 @@ const submitCourses = async (courses: Course[], token: string) => {
     });
     const responseData = await response.json();
     const newSchedule = scheduleSchema.parse(responseData);
-    console.log(newSchedule);
+    console.log(`newSchedule: ${JSON.stringify(newSchedule, null, 2)}`);
   } catch (error) {
     console.log(error);
   }
@@ -75,14 +75,17 @@ const Courses = () => {
           newCourseMap.set(c.uuid, c);
         }
         uncompleteCourse(newCourse, newCourseMap);
-        submitCourses(courses, token);
+        submitCourses(newCourses, token);
         useScheduleStore.setState({
           courses: newCourses,
         });
       } else {
         const newCourse = structuredClone(course);
         newCourse.status = newStatus;
-        submitCourses(courses, token);
+        const newCourses = structuredClone(courses);
+        newCourses[newCourse.courseIndex] = newCourse;
+        console.log(`newCourses: ${JSON.stringify(newCourses, null, 2)}`);
+        submitCourses(newCourses, token);
         setCourse(newCourse);
       }
     };
