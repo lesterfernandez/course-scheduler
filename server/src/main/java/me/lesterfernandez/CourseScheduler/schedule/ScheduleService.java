@@ -40,8 +40,8 @@ public class ScheduleService {
 
   public ScheduleDto setUserSchedule(ScheduleDto scheduleDto, UserEntity user) {
     Schedule schedule = new Schedule();
-    List<CourseDto> courseDtos = scheduleDto.getCourses();
     List<Course> courses = schedule.getCourses();
+    List<CourseDto> courseDtos = scheduleDto.getCourses();
     Map<String, CourseDto> courseDtoMap = new HashMap<>();
     Map<String, Course> courseMap = new HashMap<>();
 

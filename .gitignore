@@ -1,5 +1,6 @@
 HELP.md
-target/
+**/target/**
+!CourseScheduler-1.0.jar
 !.mvn/wrapper/maven-wrapper.jar
 !**/src/main/**/target/
 !**/src/test/**/target/
@@ -30,7 +31,6 @@ build/
 !**/src/test/**/build/
 
 server/**/static
-!server/target/CourseScheduler-1.0.jar
 
 ### VS Code ###
 .vscode/
@@ -45,3 +45,5 @@ node_modules
 !.yarn/releases
 !.yarn/sdks
 !.yarn/versions
+
+.DS_STORE
