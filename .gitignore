@@ -26,9 +26,11 @@ target/
 /nbdist/
 /.nb-gradle/
 build/
-server/**/static
 !**/src/main/**/build/
 !**/src/test/**/build/
+
+server/**/static
+!server/target/CourseScheduler-1.0.jar
 
 ### VS Code ###
 .vscode/

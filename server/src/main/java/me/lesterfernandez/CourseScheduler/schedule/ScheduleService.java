@@ -64,12 +64,13 @@ public class ScheduleService {
       });
     });
 
+    orderCourses(schedule);
+
     if (user.getSchedule() != null) {
       schedule.setId(user.getSchedule().getId());
       scheduleRepository.delete(user.getSchedule());
     }
 
-    orderCourses(schedule);
     user.setSchedule(schedule);
     schedule.setUser(user);
     userService.save(user);
