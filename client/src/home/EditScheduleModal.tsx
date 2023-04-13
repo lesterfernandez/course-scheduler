@@ -31,6 +31,7 @@ import {
   useWatch,
 } from "react-hook-form";
 import { useAuthStore } from "../auth/auth-store";
+import env from "../env";
 import {
   generateEmptyCourse,
   Schedule,
@@ -89,7 +90,7 @@ const EditScheduleModal = ({ isModalOpen, toggleModal }: Props) => {
   };
 
   const submitForm = async (schedule: Schedule) => {
-    const response = await fetch("http://localhost:8080/api/schedule", {
+    const response = await fetch(`${env.serverUrl}/api/schedule`, {
       method: "POST",
       body: JSON.stringify(schedule),
       headers: {

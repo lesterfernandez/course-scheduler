@@ -15,6 +15,7 @@ import {
 import { useRef, useState } from "react";
 import { Controller, useForm, type SubmitHandler } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
+import env from "../env";
 import { useAuthStore } from "./auth-store";
 import { signUpSchema } from "./authSchemas";
 import { saveToken } from "./jwt";
@@ -54,7 +55,7 @@ const SignUp = () => {
   };
 
   const onSubmit: SubmitHandler<SignUpData> = async data => {
-    const response = await fetch("http://localhost:8080/api/auth/register", {
+    const response = await fetch(`${env.serverUrl}/api/auth/register`, {
       method: "POST",
       body: JSON.stringify(data),
       headers: {

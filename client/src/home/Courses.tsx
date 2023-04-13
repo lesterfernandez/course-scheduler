@@ -6,11 +6,12 @@ import {
   useColorModeValue,
 } from "@chakra-ui/react";
 import { useAuthStore } from "../auth/auth-store";
+import env from "../env";
 import { Course, scheduleSchema, useScheduleStore } from "./schedule-store";
 
 const submitCourses = async (courses: Course[], token: string) => {
   try {
-    const response = await fetch("http://localhost:8080/api/schedule", {
+    const response = await fetch(`${env.serverUrl}/api/schedule`, {
       method: "POST",
       body: JSON.stringify({ courses }),
       headers: {

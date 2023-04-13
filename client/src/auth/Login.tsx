@@ -15,6 +15,7 @@ import {
 import { useRef, useState } from "react";
 import { Controller, useForm, type SubmitHandler } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
+import env from "../env";
 import { useScheduleStore } from "../home/schedule-store";
 import { useAuthStore } from "./auth-store";
 import { loginSchema } from "./authSchemas";
@@ -55,7 +56,7 @@ function Login() {
   };
 
   const onSubmit: SubmitHandler<LoginData> = async data => {
-    const response = await fetch("http://localhost:8080/api/auth/login", {
+    const response = await fetch(`${env.serverUrl}/api/auth/login`, {
       method: "POST",
       body: JSON.stringify(data),
       headers: {

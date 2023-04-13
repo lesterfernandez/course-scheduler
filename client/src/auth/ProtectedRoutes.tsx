@@ -1,6 +1,7 @@
 import { Center, Spinner } from "@chakra-ui/react";
 import { useEffect, useState } from "react";
 import { Navigate, Outlet } from "react-router-dom";
+import env from "../env";
 import { useScheduleStore } from "../home/schedule-store";
 import { useAuthStore } from "./auth-store";
 import { loginSchema } from "./authSchemas";
@@ -12,7 +13,7 @@ export default function ProtectedRoutes() {
 
   useEffect(() => {
     if (loggedIn) return;
-    fetch("http://localhost:8080/api/auth/login", {
+    fetch(`${env.serverUrl}/api/auth/login`, {
       headers: { authorization: `Bearer ${token}` },
     })
       .then(response => response.json())
