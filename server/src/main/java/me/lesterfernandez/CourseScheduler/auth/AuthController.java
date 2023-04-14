@@ -91,7 +91,13 @@ public class AuthController {
   public ResponseEntity<?> login(@RequestBody LoginDto loginDto) {
     try {
       UserEntity user = userService.findByUsername(loginDto.getUsername());
+
+      if (user == null) {
+        return new ResponseEntity<>(new ErrorResponseDto("Invalid Username or Password"), HttpStatus.UNAUTHORIZED);
+      }
+
       boolean verified = passwordEncoder.verify(loginDto.getPassword(), user.getPassword());
+
       if (!verified) {
         return AuthContext.authorizationFailedResponse;
       }
