@@ -1,6 +1,5 @@
 HELP.md
-**/target/**
-!CourseScheduler-1.0.jar
+**/server/target
 !.mvn/wrapper/maven-wrapper.jar
 !**/src/main/**/target/
 !**/src/test/**/target/
