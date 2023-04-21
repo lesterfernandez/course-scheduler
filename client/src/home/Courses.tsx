@@ -29,7 +29,7 @@ const submitCourses = async (courses: Course[], token: string) => {
 
 const Courses = () => {
   const token = useAuthStore(store => store.token);
-  const { courses, setCourse } = useScheduleStore();
+  const { courses } = useScheduleStore();
   const courseBg = useColorModeValue("gray.100", "#343434");
 
   const graph = new Map<string, string[]>();
@@ -51,43 +51,37 @@ const Courses = () => {
     inDegreeMap.set(course.uuid, inDegree);
   }
 
-  const uncompleteCourse = (
-    newCourse: Course,
-    newCourseMap: Map<string, Course>
-  ) => {
+  const uncompleteCourse = (newCourse: Course) => {
     newCourse.status = "AVAILABLE";
     const neighborUuids = graph.get(newCourse.uuid) ?? [];
     for (const neighborUuid of neighborUuids) {
-      const neighbor = newCourseMap.get(neighborUuid);
+      const neighbor = courseMap.get(neighborUuid);
       if (!neighbor || neighbor.status === "AVAILABLE") continue;
-      uncompleteCourse(neighbor, newCourseMap);
+      uncompleteCourse(neighbor);
     }
   };
 
   const onCourseStatusChange =
     (course: Course) =>
     (e: React.ChangeEvent<HTMLInputElement>): void => {
-      const newStatus = e.target.checked ? "COMPLETED" : "AVAILABLE";
-      if (newStatus === "AVAILABLE") {
-        const newCourses = structuredClone(courses);
-        const newCourse = newCourses[course.courseIndex];
-        const newCourseMap = new Map<string, Course>();
-        for (const c of newCourses) {
-          newCourseMap.set(c.uuid, c);
-        }
-        uncompleteCourse(newCourse, newCourseMap);
+      const newCourses = structuredClone(courses);
+      const newCourse = newCourses[course.courseIndex];
+
+      if (e.target.checked) {
+        newCourse.status = "COMPLETED";
         submitCourses(newCourses, token);
         useScheduleStore.setState({
           courses: newCourses,
         });
       } else {
-        const newCourse = structuredClone(course);
-        newCourse.status = newStatus;
-        const newCourses = structuredClone(courses);
-        newCourses[newCourse.courseIndex] = newCourse;
-        console.log(`newCourses: ${JSON.stringify(newCourses, null, 2)}`);
+        for (const c of newCourses) {
+          courseMap.set(c.uuid, c);
+        }
+        uncompleteCourse(newCourse);
         submitCourses(newCourses, token);
-        setCourse(newCourse);
+        useScheduleStore.setState({
+          courses: newCourses,
+        });
       }
     };
 

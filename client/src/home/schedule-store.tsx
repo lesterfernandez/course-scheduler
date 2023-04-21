@@ -29,19 +29,8 @@ export const generateEmptyCourse = (): Course => ({
 
 interface ScheduleStore {
   courses: Course[];
-  setCourse: (newCourse: Course) => void;
 }
 
-export const useScheduleStore = create<ScheduleStore>(set => ({
+export const useScheduleStore = create<ScheduleStore>(() => ({
   courses: [],
-  setCourse: (newCourse: Course) =>
-    set(state => {
-      const courseIndex = state.courses.findIndex(
-        course => course.uuid === newCourse.uuid
-      );
-      if (courseIndex === -1) return state;
-      const newCourses = structuredClone(state.courses);
-      newCourses[courseIndex] = structuredClone(newCourse);
-      return { ...state, courses: newCourses };
-    }),
 }));
