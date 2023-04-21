@@ -319,16 +319,16 @@ const PrerequisitesForm = () => {
                         label: letters + number,
                       }));
 
-                    const selectValues = value.map(courseId => {
-                      const selfValue = courses.find(
+                    const selectValue = value.map(courseId => {
+                      const course = courses.find(
                         otherCourse => otherCourse.uuid === courseId
                       );
-                      return selfValue
+                      return course
                         ? {
-                            value: selfValue.uuid,
-                            label: selfValue.letters + selfValue.number,
+                            value: course.uuid,
+                            label: course.letters + course.number,
                           }
-                        : selfValue;
+                        : course;
                     });
 
                     return (
@@ -338,7 +338,10 @@ const PrerequisitesForm = () => {
                         isMulti
                         isClearable={false}
                         options={options}
-                        value={selectValues}
+                        value={selectValue}
+                        menuPosition="fixed"
+                        menuPlacement="bottom"
+                        menuShouldBlockScroll
                         onChange={selections =>
                           void onChange(
                             selections.map(selection => selection?.value)
