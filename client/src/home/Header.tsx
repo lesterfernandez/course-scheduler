@@ -29,6 +29,9 @@ const Header = () => {
         mb="4"
         shadow="lg"
         bgColor={headerBg}
+        // override default stacking
+        // other positioned elements later in the DOM would render on top
+        zIndex="1"
       >
         <Heading textAlign="center" py="4">
           {username}'s School Schedule
