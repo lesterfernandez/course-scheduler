@@ -4,11 +4,11 @@ import (
 	"log"
 	"net/http"
 
+	"github.com/lesterfernandez/course-scheduler/backend/handler"
+	"github.com/lesterfernandez/course-scheduler/backend/model"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )
-
-var db *gorm.DB
 
 func main() {
 	db, err := gorm.Open(postgres.Open("postgresql://postgres:postgres@localhost:5001"))
@@ -16,9 +16,11 @@ func main() {
 		panic("Could not connect to db")
 	}
 
-	db.AutoMigrate(&User{}, &Course{})
+	db.AutoMigrate(&model.User{}, &model.Course{})
 
-	http.HandleFunc("/register", RegisterHandler)
+	auth := handler.AuthService{Db: db}
+
+	http.HandleFunc("/register", auth.RegisterUser)
 
 	log.Panicln(http.ListenAndServe(":8080", nil))
 }

@@ -1,4 +1,4 @@
-package main
+package model
 
 import "time"
 
@@ -16,5 +16,6 @@ type Course struct {
 	CourseIndex     uint
 	Status          string
 	User            User
+	UserID          uint
 	// Status "AVAILABLE" | "COMPLETED" = "COMPLETED"
 }
