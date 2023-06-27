@@ -21,6 +21,7 @@ func main() {
 	auth := handler.Auth{Db: db}
 
 	http.HandleFunc("/register", auth.Register)
+	http.HandleFunc("/login", auth.Login)
 
 	log.Panicln(http.ListenAndServe(":8080", nil))
 }

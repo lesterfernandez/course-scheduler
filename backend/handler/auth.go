@@ -25,9 +25,19 @@ type userCreds struct {
 	Password string `json:"password"`
 }
 
+type authResponse struct {
+	LoggedIn bool   `json:"loggedIn"`
+	Username string `json:"username"`
+	Token    string `json:"token"`
+}
+
+type loginResponse struct {
+	authResponse
+	Courses []model.Course `json:"courses"`
+}
+
 func (auth *Auth) Register(w http.ResponseWriter, req *http.Request) {
 	dec := json.NewDecoder(req.Body)
-
 	creds := userCreds{}
 	decodeErr := dec.Decode(&creds)
 
@@ -56,18 +66,51 @@ func (auth *Auth) Register(w http.ResponseWriter, req *http.Request) {
 
 	token, _ := createToken(&user)
 
-	response, _ := json.Marshal(struct {
-		LoggedIn bool   `json:"loggedIn"`
-		Username string `json:"username"`
-		Token    string `json:"token"`
-	}{
+	res, _ := json.Marshal(authResponse{
 		true, user.Username, token,
 	})
 
 	w.WriteHeader(201)
-	w.Write(response)
+	w.Header().Set("Content-Type", "application/json")
+	w.Write(res)
 
 	fmt.Printf("Registered user: %v\n", creds)
+}
+
+func (auth *Auth) Login(w http.ResponseWriter, req *http.Request) {
+	dec := json.NewDecoder(req.Body)
+	creds := userCreds{}
+	decodeErr := dec.Decode(&creds)
+
+	if decodeErr != nil || creds.Username == "" || creds.Password == "" {
+		respondWithError(w, "Invalid request!", 400)
+		return
+	}
+
+	user := model.User{}
+
+	notFoundErr := auth.Db.First(&user, "username = ?", creds.Username).Error
+	if notFoundErr != nil {
+		respondWithError(w, "Wrong username or password!", 401)
+		return
+	}
+
+	wrongPasswordErr := bcrypt.CompareHashAndPassword([]byte(user.PasswordHash), []byte(creds.Password))
+	if wrongPasswordErr != nil {
+		respondWithError(w, "Wrong username or password!", 401)
+		return
+	}
+
+	courses := userCourses(auth, user)
+	token, _ := createToken(&user)
+
+	res, _ := json.Marshal(loginResponse{
+		authResponse{true, user.Username, token}, courses,
+	})
+
+	w.Header().Set("Content-Type", "application/json")
+	w.Write(res)
+	fmt.Printf("Logged in user: %v\n", creds)
 }
 
 func (auth *Auth) userExists(username string) bool {
@@ -86,7 +129,14 @@ func createToken(u *model.User) (string, error) {
 }
 
 func respondWithError(w http.ResponseWriter, msg string, code int) {
+	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(code)
 	internalErrMsg, _ := json.Marshal(errorMsg{msg})
 	w.Write(internalErrMsg)
+}
+
+func userCourses(auth *Auth, user model.User) []model.Course {
+	var courses []model.Course
+	auth.Db.Model(&user).Association("Courses").Find(&courses)
+	return courses
 }

@@ -15,7 +15,6 @@ type Course struct {
 	Letters, Number string
 	CourseIndex     uint
 	Status          string
-	User            User
 	UserID          uint
 	// Status "AVAILABLE" | "COMPLETED" = "COMPLETED"
 }
