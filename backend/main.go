@@ -18,9 +18,9 @@ func main() {
 
 	db.AutoMigrate(&model.User{}, &model.Course{})
 
-	auth := handler.AuthService{Db: db}
+	auth := handler.Auth{Db: db}
 
-	http.HandleFunc("/register", auth.RegisterUser)
+	http.HandleFunc("/register", auth.Register)
 
 	log.Panicln(http.ListenAndServe(":8080", nil))
 }

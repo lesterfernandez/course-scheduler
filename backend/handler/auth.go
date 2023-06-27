@@ -12,7 +12,7 @@ import (
 	"gorm.io/gorm"
 )
 
-type AuthService struct {
+type Auth struct {
 	Db *gorm.DB
 }
 
@@ -25,32 +25,25 @@ type userCreds struct {
 	Password string `json:"password"`
 }
 
-func (auth *AuthService) RegisterUser(w http.ResponseWriter, req *http.Request) {
+func (auth *Auth) Register(w http.ResponseWriter, req *http.Request) {
 	dec := json.NewDecoder(req.Body)
 
 	creds := userCreds{}
 	decodeErr := dec.Decode(&creds)
 
 	if decodeErr != nil || creds.Username == "" || creds.Password == "" {
-		w.WriteHeader(400)
-		badReqMsg, _ := json.Marshal(errorMsg{"Invalid request!"})
-		w.Write(badReqMsg)
+		respondWithError(w, "Invalid request!", 400)
 		return
 	}
 
-	if userExists(auth, creds.Username) {
-		w.WriteHeader(409)
-		badReqMsg, _ := json.Marshal(errorMsg{"Username taken!"})
-		w.Write(badReqMsg)
+	if auth.userExists(creds.Username) {
+		respondWithError(w, "Username taken!", 409)
 		return
 	}
 
 	passDigest, hashErr := bcrypt.GenerateFromPassword([]byte(creds.Password), 10)
 	if hashErr != nil {
-		w.WriteHeader(500)
-		internalErrMsg, _ := json.Marshal(errorMsg{"Something went wrong!"})
-		fmt.Println(hashErr)
-		w.Write(internalErrMsg)
+		respondWithError(w, "Something went wrong!", 500)
 		return
 	}
 
@@ -77,7 +70,7 @@ func (auth *AuthService) RegisterUser(w http.ResponseWriter, req *http.Request) 
 	fmt.Printf("Registered user: %v\n", creds)
 }
 
-func userExists(auth *AuthService, username string) bool {
+func (auth *Auth) userExists(username string) bool {
 	notFoundErr := auth.Db.First(&model.User{}, "username = ?", username).Error
 	return notFoundErr == nil
 }
@@ -90,4 +83,10 @@ func createToken(u *model.User) (string, error) {
 	}
 	t := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 	return t.SignedString([]byte("totally secret string here..."))
+}
+
+func respondWithError(w http.ResponseWriter, msg string, code int) {
+	w.WriteHeader(code)
+	internalErrMsg, _ := json.Marshal(errorMsg{msg})
+	w.Write(internalErrMsg)
 }
