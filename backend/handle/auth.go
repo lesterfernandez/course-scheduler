@@ -1,4 +1,4 @@
-package handler
+package handle
 
 import (
 	"encoding/json"
@@ -9,16 +9,7 @@ import (
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/lesterfernandez/course-scheduler/backend/model"
 	"golang.org/x/crypto/bcrypt"
-	"gorm.io/gorm"
 )
-
-type Auth struct {
-	Db *gorm.DB
-}
-
-type errorMsg struct {
-	ErrorMessage string `json:"errorMessage"`
-}
 
 type userCreds struct {
 	Username string `json:"username"`
@@ -36,7 +27,11 @@ type loginResponse struct {
 	Courses []model.Course `json:"courses"`
 }
 
-func (auth *Auth) Register(w http.ResponseWriter, req *http.Request) {
+type errorMsg struct {
+	ErrorMessage string `json:"errorMessage"`
+}
+
+func (h *Handler) Register(w http.ResponseWriter, req *http.Request) {
 	dec := json.NewDecoder(req.Body)
 	creds := userCreds{}
 	decodeErr := dec.Decode(&creds)
@@ -46,7 +41,7 @@ func (auth *Auth) Register(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	if auth.userExists(creds.Username) {
+	if h.Data.UserExists(creds.Username) {
 		respondWithError(w, "Username taken!", 409)
 		return
 	}
@@ -62,7 +57,7 @@ func (auth *Auth) Register(w http.ResponseWriter, req *http.Request) {
 		PasswordHash: string(passDigest),
 	}
 
-	auth.Db.Create(&user)
+	h.Data.CreateUser(&user)
 
 	token, _ := createToken(&user)
 
@@ -77,7 +72,7 @@ func (auth *Auth) Register(w http.ResponseWriter, req *http.Request) {
 	fmt.Printf("Registered user: %v\n", creds)
 }
 
-func (auth *Auth) Login(w http.ResponseWriter, req *http.Request) {
+func (h *Handler) Login(w http.ResponseWriter, req *http.Request) {
 	dec := json.NewDecoder(req.Body)
 	creds := userCreds{}
 	decodeErr := dec.Decode(&creds)
@@ -87,9 +82,7 @@ func (auth *Auth) Login(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	user := model.User{}
-
-	notFoundErr := auth.Db.First(&user, "username = ?", creds.Username).Error
+	user, notFoundErr := h.Data.UserByUsername(creds.Username)
 	if notFoundErr != nil {
 		respondWithError(w, "Wrong username or password!", 401)
 		return
@@ -101,8 +94,8 @@ func (auth *Auth) Login(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	courses := userCourses(auth, user)
-	token, _ := createToken(&user)
+	courses := h.Data.Courses(user)
+	token, _ := createToken(user)
 
 	res, _ := json.Marshal(loginResponse{
 		authResponse{true, user.Username, token}, courses,
@@ -113,11 +106,6 @@ func (auth *Auth) Login(w http.ResponseWriter, req *http.Request) {
 	fmt.Printf("Logged in user: %v\n", creds)
 }
 
-func (auth *Auth) userExists(username string) bool {
-	notFoundErr := auth.Db.First(&model.User{}, "username = ?", username).Error
-	return notFoundErr == nil
-}
-
 func createToken(u *model.User) (string, error) {
 	claims := &jwt.RegisteredClaims{
 		Subject:   u.Username,
@@ -126,17 +114,4 @@ func createToken(u *model.User) (string, error) {
 	}
 	t := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 	return t.SignedString([]byte("totally secret string here..."))
-}
-
-func respondWithError(w http.ResponseWriter, msg string, code int) {
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(code)
-	internalErrMsg, _ := json.Marshal(errorMsg{msg})
-	w.Write(internalErrMsg)
-}
-
-func userCourses(auth *Auth, user model.User) []model.Course {
-	var courses []model.Course
-	auth.Db.Model(&user).Association("Courses").Find(&courses)
-	return courses
 }

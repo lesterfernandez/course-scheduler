@@ -4,7 +4,8 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/lesterfernandez/course-scheduler/backend/handler"
+	"github.com/lesterfernandez/course-scheduler/backend/data"
+	"github.com/lesterfernandez/course-scheduler/backend/handle"
 	"github.com/lesterfernandez/course-scheduler/backend/model"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
@@ -18,10 +19,11 @@ func main() {
 
 	db.AutoMigrate(&model.User{}, &model.Course{})
 
-	auth := handler.Auth{Db: db}
+	data := data.Repo{Db: db}
+	h := handle.Handler{Data: data}
 
-	http.HandleFunc("/register", auth.Register)
-	http.HandleFunc("/login", auth.Login)
+	http.HandleFunc("/register", h.Register)
+	http.HandleFunc("/login", h.Login)
 
 	log.Panicln(http.ListenAndServe(":8080", nil))
 }
