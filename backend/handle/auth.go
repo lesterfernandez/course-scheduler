@@ -4,12 +4,15 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"strings"
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/lesterfernandez/course-scheduler/backend/model"
 	"golang.org/x/crypto/bcrypt"
 )
+
+const jwtSecret = "totally secret string here..."
 
 type userCreds struct {
 	Username string `json:"username"`
@@ -72,6 +75,14 @@ func (h *Handler) Register(w http.ResponseWriter, req *http.Request) {
 	fmt.Printf("Registered user: %v\n", creds)
 }
 
+func (h *Handler) LoginRoot(w http.ResponseWriter, req *http.Request) {
+	if req.Method == http.MethodGet {
+		h.ImplicitLogin(w, req)
+	} else if req.Method == http.MethodPost {
+		h.Login(w, req)
+	}
+}
+
 func (h *Handler) Login(w http.ResponseWriter, req *http.Request) {
 	dec := json.NewDecoder(req.Body)
 	creds := userCreds{}
@@ -95,6 +106,7 @@ func (h *Handler) Login(w http.ResponseWriter, req *http.Request) {
 	}
 
 	courses := h.Data.Courses(user)
+
 	token, _ := createToken(user)
 
 	res, _ := json.Marshal(loginResponse{
@@ -106,6 +118,38 @@ func (h *Handler) Login(w http.ResponseWriter, req *http.Request) {
 	fmt.Printf("Logged in user: %v\n", creds)
 }
 
+func (h *Handler) ImplicitLogin(w http.ResponseWriter, req *http.Request) {
+	header := req.Header.Get("Authorization")
+	splitHeader := strings.Split(header, " ")
+	if len(splitHeader) != 2 || !strings.EqualFold(splitHeader[0], "Bearer") {
+		respondWithError(w, "Not logged in!", 401)
+		return
+	}
+
+	token := splitHeader[1]
+	parsedToken, parseErr := parseToken(token)
+	if parseErr != nil || !parsedToken.Valid {
+		respondWithError(w, "Not logged in!", 401)
+		return
+	}
+
+	username, _ := parsedToken.Claims.GetSubject()
+	user, notFoundErr := h.Data.UserByUsername(username)
+	if notFoundErr != nil {
+		respondWithError(w, "Not logged in!", 401)
+		return
+	}
+
+	courses := h.Data.Courses(user)
+	res, _ := json.Marshal(loginResponse{
+		authResponse{true, user.Username, token}, courses,
+	})
+
+	w.Header().Set("Content-Type", "application/json")
+	w.Write(res)
+	fmt.Printf("Logged in user: %v\n", username)
+}
+
 func createToken(u *model.User) (string, error) {
 	claims := &jwt.RegisteredClaims{
 		Subject:   u.Username,
@@ -113,5 +157,14 @@ func createToken(u *model.User) (string, error) {
 		ExpiresAt: jwt.NewNumericDate(time.Now().Add(time.Hour * 24 * 7)),
 	}
 	t := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-	return t.SignedString([]byte("totally secret string here..."))
+	return t.SignedString([]byte(jwtSecret))
+}
+
+func parseToken(token string) (*jwt.Token, error) {
+	validMethods := []string{jwt.SigningMethodHS256.Name}
+	parser := jwt.NewParser(jwt.WithValidMethods(validMethods), jwt.WithIssuedAt())
+	parsedToken, parseErr := parser.Parse(token, func(t *jwt.Token) (interface{}, error) {
+		return []byte(jwtSecret), nil
+	})
+	return parsedToken, parseErr
 }

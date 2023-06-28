@@ -23,7 +23,7 @@ func main() {
 	h := handle.Handler{Data: data}
 
 	http.HandleFunc("/register", h.Register)
-	http.HandleFunc("/login", h.Login)
+	http.HandleFunc("/login", h.LoginRoot)
 
 	log.Panicln(http.ListenAndServe(":8080", nil))
 }
