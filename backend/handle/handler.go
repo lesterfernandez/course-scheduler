@@ -8,7 +8,7 @@ import (
 )
 
 type Handler struct {
-	Data data.Repo
+	Repo data.Repo
 }
 
 func respondWithError(w http.ResponseWriter, msg string, code int) {

@@ -19,8 +19,8 @@ func main() {
 
 	db.AutoMigrate(&model.User{}, &model.Course{})
 
-	data := data.Repo{Db: db}
-	h := handle.Handler{Data: data}
+	data := data.DataRepo{Db: db}
+	h := handle.Handler{Repo: &data}
 
 	http.HandleFunc("/register", h.Register)
 	http.HandleFunc("/login", h.LoginRoot)

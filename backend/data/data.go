@@ -5,27 +5,34 @@ import (
 	"gorm.io/gorm"
 )
 
-type Repo struct {
+type Repo interface {
+	UserByUsername(username string) (*model.User, error)
+	UserExists(username string) bool
+	Courses(user *model.User) []model.Course
+	CreateUser(user *model.User) error
+}
+
+type DataRepo struct {
 	Db *gorm.DB
 }
 
-func (r *Repo) UserByUsername(username string) (*model.User, error) {
+func (data *DataRepo) UserByUsername(username string) (*model.User, error) {
 	user := model.User{}
-	notFoundErr := r.Db.First(&user, "username = ?", username).Error
+	notFoundErr := data.Db.First(&user, "username = ?", username).Error
 	return &user, notFoundErr
 }
 
-func (r *Repo) UserExists(username string) bool {
-	_, notFoundErr := r.UserByUsername(username)
+func (data *DataRepo) UserExists(username string) bool {
+	_, notFoundErr := data.UserByUsername(username)
 	return notFoundErr == nil
 }
 
-func (r *Repo) Courses(user *model.User) []model.Course {
+func (data *DataRepo) Courses(user *model.User) []model.Course {
 	var courses []model.Course
-	r.Db.Model(user).Association("Courses").Find(&courses)
+	data.Db.Model(user).Association("Courses").Find(&courses)
 	return courses
 }
 
-func (r *Repo) CreateUser(user *model.User) error {
-	return r.Db.Create(user).Error
+func (data *DataRepo) CreateUser(user *model.User) error {
+	return data.Db.Create(user).Error
 }

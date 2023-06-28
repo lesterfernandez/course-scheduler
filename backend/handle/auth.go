@@ -44,7 +44,7 @@ func (h *Handler) Register(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	if h.Data.UserExists(creds.Username) {
+	if h.Repo.UserExists(creds.Username) {
 		respondWithError(w, "Username taken!", 409)
 		return
 	}
@@ -60,7 +60,7 @@ func (h *Handler) Register(w http.ResponseWriter, req *http.Request) {
 		PasswordHash: string(passDigest),
 	}
 
-	h.Data.CreateUser(&user)
+	h.Repo.CreateUser(&user)
 
 	token, _ := createToken(&user)
 
@@ -93,7 +93,7 @@ func (h *Handler) Login(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	user, notFoundErr := h.Data.UserByUsername(creds.Username)
+	user, notFoundErr := h.Repo.UserByUsername(creds.Username)
 	if notFoundErr != nil {
 		respondWithError(w, "Wrong username or password!", 401)
 		return
@@ -105,7 +105,7 @@ func (h *Handler) Login(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	courses := h.Data.Courses(user)
+	courses := h.Repo.Courses(user)
 
 	token, _ := createToken(user)
 
@@ -134,13 +134,13 @@ func (h *Handler) ImplicitLogin(w http.ResponseWriter, req *http.Request) {
 	}
 
 	username, _ := parsedToken.Claims.GetSubject()
-	user, notFoundErr := h.Data.UserByUsername(username)
+	user, notFoundErr := h.Repo.UserByUsername(username)
 	if notFoundErr != nil {
 		respondWithError(w, "Not logged in!", 401)
 		return
 	}
 
-	courses := h.Data.Courses(user)
+	courses := h.Repo.Courses(user)
 	res, _ := json.Marshal(loginResponse{
 		authResponse{true, user.Username, token}, courses,
 	})
