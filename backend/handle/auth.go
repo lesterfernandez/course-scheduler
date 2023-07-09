@@ -5,14 +5,11 @@ import (
 	"fmt"
 	"net/http"
 	"strings"
-	"time"
 
-	"github.com/golang-jwt/jwt/v5"
+	"github.com/lesterfernandez/course-scheduler/backend/auth"
 	"github.com/lesterfernandez/course-scheduler/backend/model"
 	"golang.org/x/crypto/bcrypt"
 )
-
-const jwtSecret = "totally secret string here..."
 
 type userCreds struct {
 	Username string `json:"username"`
@@ -62,7 +59,7 @@ func (h *Handler) Register(w http.ResponseWriter, req *http.Request) {
 
 	h.Repo.CreateUser(&user)
 
-	token, _ := createToken(&user)
+	token, _ := auth.CreateToken(&user)
 
 	res, _ := json.Marshal(authResponse{
 		true, user.Username, token,
@@ -107,7 +104,7 @@ func (h *Handler) Login(w http.ResponseWriter, req *http.Request) {
 
 	courses := h.Repo.Courses(user)
 
-	token, _ := createToken(user)
+	token, _ := auth.CreateToken(user)
 
 	res, _ := json.Marshal(loginResponse{
 		authResponse{true, user.Username, token}, courses,
@@ -127,7 +124,7 @@ func (h *Handler) ImplicitLogin(w http.ResponseWriter, req *http.Request) {
 	}
 
 	token := splitHeader[1]
-	parsedToken, parseErr := parseToken(token)
+	parsedToken, parseErr := auth.ParseToken(token)
 	if parseErr != nil || !parsedToken.Valid {
 		respondWithError(w, "Not logged in!", 401)
 		return
@@ -148,23 +145,4 @@ func (h *Handler) ImplicitLogin(w http.ResponseWriter, req *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	w.Write(res)
 	fmt.Printf("Logged in user: %v\n", username)
-}
-
-func createToken(u *model.User) (string, error) {
-	claims := &jwt.RegisteredClaims{
-		Subject:   u.Username,
-		IssuedAt:  jwt.NewNumericDate(time.Now()),
-		ExpiresAt: jwt.NewNumericDate(time.Now().Add(time.Hour * 24 * 7)),
-	}
-	t := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-	return t.SignedString([]byte(jwtSecret))
-}
-
-func parseToken(token string) (*jwt.Token, error) {
-	validMethods := []string{jwt.SigningMethodHS256.Name}
-	parser := jwt.NewParser(jwt.WithValidMethods(validMethods), jwt.WithIssuedAt())
-	parsedToken, parseErr := parser.Parse(token, func(t *jwt.Token) (interface{}, error) {
-		return []byte(jwtSecret), nil
-	})
-	return parsedToken, parseErr
 }
