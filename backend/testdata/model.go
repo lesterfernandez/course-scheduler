@@ -1,4 +1,4 @@
-package model
+package testdata
 
 import (
 	crand "crypto/rand"
@@ -7,16 +7,17 @@ import (
 	"math/rand"
 	"time"
 
+	"github.com/lesterfernandez/course-scheduler/backend/model"
 	"golang.org/x/crypto/bcrypt"
 )
 
-func CreateTestUser() *User {
+func CreateTestUser() *model.User {
 	bytes := make([]byte, 4)
 	crand.Read(bytes)
 
 	passDigest, _ := bcrypt.GenerateFromPassword(bytes, 10)
 
-	return &User{
+	return &model.User{
 		ID:           uint(rand.Intn(100)),
 		CreatedAt:    time.Now(),
 		UpdatedAt:    time.Now(),
@@ -25,7 +26,7 @@ func CreateTestUser() *User {
 	}
 }
 
-func CreateTestCourse() *Course {
+func CreateTestCourse() *model.Course {
 	bytes := make([]byte, 4)
 	crand.Read(bytes)
 
@@ -34,7 +35,7 @@ func CreateTestCourse() *Course {
 		status = "COMPLETED"
 	}
 
-	return &Course{
+	return &model.Course{
 		ID:          uint(rand.Intn(100)),
 		Uuid:        hex.EncodeToString(bytes),
 		Letters:     "COP",

@@ -12,6 +12,15 @@ type Server struct {
 	Course data.CourseRepo
 }
 
+func ServerInit() *Server {
+	s := Server{}
+
+	http.HandleFunc("/register", s.Register)
+	http.HandleFunc("/login", s.LoginRoot)
+
+	return &s
+}
+
 func respondWithError(w http.ResponseWriter, msg string, code int) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(code)
