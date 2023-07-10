@@ -31,7 +31,7 @@ type errorMsg struct {
 	ErrorMessage string `json:"errorMessage"`
 }
 
-func (h *Handler) Register(w http.ResponseWriter, req *http.Request) {
+func (s *Server) Register(w http.ResponseWriter, req *http.Request) {
 	dec := json.NewDecoder(req.Body)
 	creds := userCreds{}
 	decodeErr := dec.Decode(&creds)
@@ -41,7 +41,7 @@ func (h *Handler) Register(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	if h.Repo.UserExists(creds.Username) {
+	if s.User.UserExists(creds.Username) {
 		respondWithError(w, "Username taken!", 409)
 		return
 	}
@@ -57,7 +57,7 @@ func (h *Handler) Register(w http.ResponseWriter, req *http.Request) {
 		PasswordHash: string(passDigest),
 	}
 
-	h.Repo.CreateUser(&user)
+	s.User.CreateUser(&user)
 
 	token, _ := auth.CreateToken(&user)
 
@@ -72,15 +72,15 @@ func (h *Handler) Register(w http.ResponseWriter, req *http.Request) {
 	fmt.Printf("Registered user: %v\n", creds)
 }
 
-func (h *Handler) LoginRoot(w http.ResponseWriter, req *http.Request) {
+func (s *Server) LoginRoot(w http.ResponseWriter, req *http.Request) {
 	if req.Method == http.MethodGet {
-		h.ImplicitLogin(w, req)
+		s.ImplicitLogin(w, req)
 	} else if req.Method == http.MethodPost {
-		h.Login(w, req)
+		s.Login(w, req)
 	}
 }
 
-func (h *Handler) Login(w http.ResponseWriter, req *http.Request) {
+func (s *Server) Login(w http.ResponseWriter, req *http.Request) {
 	dec := json.NewDecoder(req.Body)
 	creds := userCreds{}
 	decodeErr := dec.Decode(&creds)
@@ -90,7 +90,7 @@ func (h *Handler) Login(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	user, notFoundErr := h.Repo.UserByUsername(creds.Username)
+	user, notFoundErr := s.User.UserByUsername(creds.Username)
 	if notFoundErr != nil {
 		respondWithError(w, "Wrong username or password!", 401)
 		return
@@ -102,7 +102,7 @@ func (h *Handler) Login(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	courses := h.Repo.Courses(user)
+	courses := s.Course.Courses(user)
 
 	token, _ := auth.CreateToken(user)
 
@@ -115,7 +115,7 @@ func (h *Handler) Login(w http.ResponseWriter, req *http.Request) {
 	fmt.Printf("Logged in user: %v\n", creds)
 }
 
-func (h *Handler) ImplicitLogin(w http.ResponseWriter, req *http.Request) {
+func (s *Server) ImplicitLogin(w http.ResponseWriter, req *http.Request) {
 	header := req.Header.Get("Authorization")
 	splitHeader := strings.Split(header, " ")
 	if len(splitHeader) != 2 || !strings.EqualFold(splitHeader[0], "Bearer") {
@@ -131,13 +131,13 @@ func (h *Handler) ImplicitLogin(w http.ResponseWriter, req *http.Request) {
 	}
 
 	username, _ := parsedToken.Claims.GetSubject()
-	user, notFoundErr := h.Repo.UserByUsername(username)
+	user, notFoundErr := s.User.UserByUsername(username)
 	if notFoundErr != nil {
 		respondWithError(w, "Not logged in!", 401)
 		return
 	}
 
-	courses := h.Repo.Courses(user)
+	courses := s.Course.Courses(user)
 	res, _ := json.Marshal(loginResponse{
 		authResponse{true, user.Username, token}, courses,
 	})

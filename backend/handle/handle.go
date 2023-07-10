@@ -7,8 +7,9 @@ import (
 	"github.com/lesterfernandez/course-scheduler/backend/data"
 )
 
-type Handler struct {
-	Repo data.Repo
+type Server struct {
+	User   data.UserRepo
+	Course data.CourseRepo
 }
 
 func respondWithError(w http.ResponseWriter, msg string, code int) {

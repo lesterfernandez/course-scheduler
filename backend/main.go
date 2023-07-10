@@ -19,11 +19,16 @@ func main() {
 
 	db.AutoMigrate(&model.User{}, &model.Course{})
 
-	data := data.DataRepo{Db: db}
-	h := handle.Handler{Repo: &data}
+	userRepo := data.UserData{Db: db}
+	courseRepo := data.CourseData{Db: db}
 
-	http.HandleFunc("/register", h.Register)
-	http.HandleFunc("/login", h.LoginRoot)
+	s := handle.Server{
+		User:   &userRepo,
+		Course: &courseRepo,
+	}
+
+	http.HandleFunc("/register", s.Register)
+	http.HandleFunc("/login", s.LoginRoot)
 
 	log.Panicln(http.ListenAndServe(":8080", nil))
 }
