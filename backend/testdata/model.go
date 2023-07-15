@@ -11,18 +11,38 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
-func CreateTestUser() *model.User {
+type TestUserOption func(*model.User)
+
+func CreateTestUser(options ...TestUserOption) *model.User {
 	bytes := make([]byte, 4)
 	crand.Read(bytes)
-
 	passDigest, _ := bcrypt.GenerateFromPassword(bytes, 10)
 
-	return &model.User{
+	u := &model.User{
 		ID:           uint(rand.Intn(100)),
 		CreatedAt:    time.Now(),
 		UpdatedAt:    time.Now(),
 		Username:     "Bob",
 		PasswordHash: string(passDigest),
+	}
+
+	for _, opt := range options {
+		opt(u)
+	}
+
+	return u
+}
+
+func WithUsername(username string) func(*model.User) {
+	return func(u *model.User) {
+		u.Username = username
+	}
+}
+
+func WithPassword(password string) func(*model.User) {
+	return func(u *model.User) {
+		passDigest, _ := bcrypt.GenerateFromPassword([]byte(password), 10)
+		u.PasswordHash = string(passDigest)
 	}
 }
 
