@@ -13,6 +13,7 @@ type UserRepo interface {
 
 type CourseRepo interface {
 	Courses(user *model.User) []model.Course
+	CoursesByUsername(username string) []model.Course
 }
 
 type UserData struct {
@@ -41,5 +42,11 @@ func (data *UserData) CreateUser(user *model.User) error {
 func (data *CourseData) Courses(user *model.User) []model.Course {
 	var courses []model.Course
 	data.Db.Model(user).Association("Courses").Find(&courses)
+	return courses
+}
+
+func (data *CourseData) CoursesByUsername(username string) []model.Course {
+	var courses []model.Course
+	data.Db.Joins("INNER JOIN users ON users.id = courses.user_id").Where("users.username = ?", username).Find(&courses)
 	return courses
 }

@@ -21,9 +21,14 @@ func (u *UserTestRepo) UserExists(username string) bool {
 }
 
 type CourseTestRepo struct {
-	CoursesMock func(user *model.User) []model.Course
+	CoursesMock           func(user *model.User) []model.Course
+	CoursesByUsernameMock func(username string) []model.Course
 }
 
 func (c *CourseTestRepo) Courses(user *model.User) []model.Course {
 	return c.CoursesMock(user)
+}
+
+func (c *CourseTestRepo) CoursesByUsername(username string) []model.Course {
+	return c.CoursesByUsernameMock(username)
 }

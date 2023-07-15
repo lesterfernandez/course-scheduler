@@ -15,6 +15,7 @@ type Server struct {
 func ServerInit(s *Server, mux *http.ServeMux) {
 	mux.HandleFunc("/api/register", s.Register)
 	mux.HandleFunc("/api/login", s.LoginRoot)
+	mux.HandleFunc("/api/schedule", s.CoursesRoot)
 }
 
 func respondWithError(w http.ResponseWriter, msg string, code int) {

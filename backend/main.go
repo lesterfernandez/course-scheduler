@@ -9,10 +9,14 @@ import (
 	"github.com/lesterfernandez/course-scheduler/backend/model"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
+	"gorm.io/gorm/logger"
 )
 
 func main() {
-	db, err := gorm.Open(postgres.Open("postgresql://postgres:postgres@localhost:5001"))
+	db, err := gorm.Open(postgres.Open("postgresql://postgres:postgres@localhost:5001"),
+		&gorm.Config{
+			Logger: logger.Default.LogMode(logger.Info),
+		})
 	if err != nil {
 		panic("Could not connect to db")
 	}
