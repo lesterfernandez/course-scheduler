@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
-	"strings"
 
 	"github.com/lesterfernandez/course-scheduler/backend/auth"
 	"github.com/lesterfernandez/course-scheduler/backend/model"
@@ -68,7 +67,7 @@ func (s *Server) Register(w http.ResponseWriter, req *http.Request) {
 
 func (s *Server) LoginRoot(w http.ResponseWriter, req *http.Request) {
 	if req.Method == http.MethodGet {
-		s.ImplicitLogin(w, req)
+		JwtFilter(s.ImplicitLogin)(w, req)
 	} else if req.Method == http.MethodPost {
 		s.Login(w, req)
 	}
@@ -109,14 +108,12 @@ func (s *Server) Login(w http.ResponseWriter, req *http.Request) {
 }
 
 func (s *Server) ImplicitLogin(w http.ResponseWriter, req *http.Request) {
-	header := req.Header.Get("Authorization")
-	splitHeader := strings.Split(header, " ")
-	if len(splitHeader) != 2 || !strings.EqualFold(splitHeader[0], "Bearer") {
+	token, tokenErr := auth.ParseAuthHeader(req)
+	if tokenErr != nil {
 		respondWithError(w, "Not logged in!", 401)
 		return
 	}
 
-	token := splitHeader[1]
 	parsedToken, parseErr := auth.ParseToken(token)
 	if parseErr != nil || !parsedToken.Valid {
 		respondWithError(w, "Not logged in!", 401)
@@ -135,7 +132,9 @@ func (s *Server) ImplicitLogin(w http.ResponseWriter, req *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(
 		loginResponse{
-			authResponse{true, user.Username, token}, courses,
+			authResponse{true, user.Username, token},
+			courses,
 		})
+
 	fmt.Printf("Logged in user: %v\n", username)
 }

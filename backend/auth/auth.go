@@ -1,6 +1,9 @@
 package auth
 
 import (
+	"errors"
+	"net/http"
+	"strings"
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
@@ -26,4 +29,14 @@ func ParseToken(token string) (*jwt.Token, error) {
 		return []byte(jwtSecret), nil
 	})
 	return parsedToken, parseErr
+}
+
+func ParseAuthHeader(r *http.Request) (string, error) {
+	header := r.Header.Get("Authorization")
+	splitHeader := strings.Split(header, " ")
+	if len(splitHeader) != 2 || !strings.EqualFold(splitHeader[0], "Bearer") {
+		return "", errors.New("invalid authorization header")
+	}
+	token := splitHeader[1]
+	return token, nil
 }

@@ -161,7 +161,7 @@ func TestLogin(t *testing.T) {
 		if loginRes.Username != "Timmy" || !loginRes.LoggedIn {
 			t.FailNow()
 		}
-		t.Log(res)
+
 		if res.StatusCode != http.StatusOK {
 			t.Fatal("Incorrect status code")
 		}
