@@ -16,12 +16,12 @@ func main() {
 	if err != nil {
 		panic("Could not connect to db")
 	}
-
 	db.AutoMigrate(&model.User{}, &model.Course{})
 
-	s := handle.ServerInit()
-	s.User = &data.UserData{Db: db}
-	s.Course = &data.CourseData{Db: db}
+	user := &data.UserData{Db: db}
+	course := &data.CourseData{Db: db}
+	s := handle.Server{User: user, Course: course}
+	handle.ServerInit(&s, http.DefaultServeMux)
 
 	log.Panicln(http.ListenAndServe(":8080", nil))
 }

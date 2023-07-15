@@ -12,13 +12,9 @@ type Server struct {
 	Course data.CourseRepo
 }
 
-func ServerInit() *Server {
-	s := Server{}
-
-	http.HandleFunc("/register", s.Register)
-	http.HandleFunc("/login", s.LoginRoot)
-
-	return &s
+func ServerInit(s *Server, mux *http.ServeMux) {
+	mux.HandleFunc("/api/register", s.Register)
+	mux.HandleFunc("/api/login", s.LoginRoot)
 }
 
 func respondWithError(w http.ResponseWriter, msg string, code int) {

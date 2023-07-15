@@ -32,9 +32,8 @@ type errorMsg struct {
 }
 
 func (s *Server) Register(w http.ResponseWriter, req *http.Request) {
-	dec := json.NewDecoder(req.Body)
 	creds := userCreds{}
-	decodeErr := dec.Decode(&creds)
+	decodeErr := json.NewDecoder(req.Body).Decode(&creds)
 
 	if decodeErr != nil || creds.Username == "" || creds.Password == "" {
 		respondWithError(w, "Invalid request!", 400)
@@ -61,14 +60,9 @@ func (s *Server) Register(w http.ResponseWriter, req *http.Request) {
 
 	token, _ := auth.CreateToken(&user)
 
-	res, _ := json.Marshal(authResponse{
-		true, user.Username, token,
-	})
-
 	w.WriteHeader(201)
 	w.Header().Set("Content-Type", "application/json")
-	w.Write(res)
-
+	json.NewEncoder(w).Encode(authResponse{true, user.Username, token})
 	fmt.Printf("Registered user: %v\n", creds)
 }
 
@@ -81,9 +75,8 @@ func (s *Server) LoginRoot(w http.ResponseWriter, req *http.Request) {
 }
 
 func (s *Server) Login(w http.ResponseWriter, req *http.Request) {
-	dec := json.NewDecoder(req.Body)
 	creds := userCreds{}
-	decodeErr := dec.Decode(&creds)
+	decodeErr := json.NewDecoder(req.Body).Decode(&creds)
 
 	if decodeErr != nil || creds.Username == "" || creds.Password == "" {
 		respondWithError(w, "Invalid request!", 400)
@@ -106,12 +99,12 @@ func (s *Server) Login(w http.ResponseWriter, req *http.Request) {
 
 	token, _ := auth.CreateToken(user)
 
-	res, _ := json.Marshal(loginResponse{
-		authResponse{true, user.Username, token}, courses,
-	})
-
 	w.Header().Set("Content-Type", "application/json")
-	w.Write(res)
+	json.NewEncoder(w).Encode(
+		loginResponse{
+			authResponse{true, user.Username, token},
+			courses,
+		})
 	fmt.Printf("Logged in user: %v\n", creds)
 }
 
@@ -138,11 +131,11 @@ func (s *Server) ImplicitLogin(w http.ResponseWriter, req *http.Request) {
 	}
 
 	courses := s.Course.Courses(user)
-	res, _ := json.Marshal(loginResponse{
-		authResponse{true, user.Username, token}, courses,
-	})
 
 	w.Header().Set("Content-Type", "application/json")
-	w.Write(res)
+	json.NewEncoder(w).Encode(
+		loginResponse{
+			authResponse{true, user.Username, token}, courses,
+		})
 	fmt.Printf("Logged in user: %v\n", username)
 }
