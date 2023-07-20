@@ -18,6 +18,10 @@ func ServerInit(s *Server, mux *http.ServeMux) {
 	mux.HandleFunc("/api/schedule", s.CoursesRoot)
 }
 
+type errorMsg struct {
+	ErrorMessage string `json:"errorMessage"`
+}
+
 func respondWithError(w http.ResponseWriter, msg string, code int) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(code)
