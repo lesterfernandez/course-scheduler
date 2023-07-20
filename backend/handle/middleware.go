@@ -8,14 +8,9 @@ import (
 
 func JwtFilter(h http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		token, tokenErr := auth.ParseAuthHeader(r)
-		if tokenErr != nil {
-			respondWithError(w, "Not logged in!", 401)
-			return
-		}
+		_, parseJwtErr := auth.ParseTokenFromRequest(r)
 
-		parsedToken, parseErr := auth.ParseToken(token)
-		if parseErr != nil || !parsedToken.Valid {
+		if parseJwtErr != nil {
 			respondWithError(w, "Not logged in!", 401)
 			return
 		}

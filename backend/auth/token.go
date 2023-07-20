@@ -10,9 +10,13 @@ import (
 	"github.com/lesterfernandez/course-scheduler/backend/model"
 )
 
-const jwtSecret = "totally secret string here..."
+const jwtSecret = "totally not a secret string here..."
 
 func CreateToken(u *model.User) (string, error) {
+	if u.Username == "" {
+		return "", errors.New("invalid user format")
+	}
+
 	claims := &jwt.RegisteredClaims{
 		Subject:   u.Username,
 		IssuedAt:  jwt.NewNumericDate(time.Now()),
@@ -39,4 +43,20 @@ func ParseAuthHeader(r *http.Request) (string, error) {
 	}
 	token := splitHeader[1]
 	return token, nil
+}
+
+func ParseTokenFromRequest(r *http.Request) (*jwt.Token, error) {
+	token, parseHeaderErr := ParseAuthHeader(r)
+
+	if parseHeaderErr != nil {
+		return nil, parseHeaderErr
+	}
+
+	jwt, parseTokenErr := ParseToken(token)
+
+	if parseTokenErr != nil {
+		return nil, parseTokenErr
+	}
+
+	return jwt, nil
 }

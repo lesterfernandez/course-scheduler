@@ -21,9 +21,14 @@ func (s *Server) CoursesRoot(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *Server) CoursesGet(w http.ResponseWriter, r *http.Request) {
-	token, _ := auth.ParseAuthHeader(r)
-	jwt, _ := auth.ParseToken(token)
+	jwt, jwtParseErr := auth.ParseTokenFromRequest(r)
+	if jwtParseErr != nil {
+		respondWithError(w, "Not logged in!", 401)
+		return
+	}
+
 	username, _ := jwt.Claims.GetSubject()
+
 	courses := s.Course.CoursesByUsername(username)
 	resBody := schedule{
 		courses,
@@ -33,5 +38,12 @@ func (s *Server) CoursesGet(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *Server) CoursesPost(w http.ResponseWriter, r *http.Request) {
-	w.Write([]byte("todo"))
+	schedule := schedule{}
+	parseBodyErr := json.NewDecoder(r.Body).Decode(&schedule)
+
+	if parseBodyErr != nil {
+		respondWithError(w, "Something went wrong!", 400)
+		return
+	}
+
 }
