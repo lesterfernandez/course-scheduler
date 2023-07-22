@@ -7,13 +7,15 @@ import (
 
 type UserRepo interface {
 	UserCreate(user *model.User) error
-	UserByUsername(username string) (*model.User, error)
 	UserExists(username string) bool
+	UserByUsername(username string) (*model.User, error)
+	UserIdByUsername(username string) (uint, error)
 }
 
 type CourseRepo interface {
-	Courses(user *model.User) []model.Course
-	CoursesByUsername(username string) []model.Course
+	Courses(user *model.User) []*model.Course
+	CoursesByUsername(username string) []*model.Course
+	CoursesCreate(courses []*model.Course) error
 }
 
 type UserData struct {
@@ -24,10 +26,8 @@ type CourseData struct {
 	Db *gorm.DB
 }
 
-func (data *UserData) UserByUsername(username string) (*model.User, error) {
-	user := model.User{}
-	notFoundErr := data.Db.First(&user, "username = ?", username).Error
-	return &user, notFoundErr
+func (data *UserData) UserCreate(user *model.User) error {
+	return data.Db.Create(user).Error
 }
 
 func (data *UserData) UserExists(username string) bool {
@@ -35,18 +35,31 @@ func (data *UserData) UserExists(username string) bool {
 	return notFoundErr == nil
 }
 
-func (data *UserData) UserCreate(user *model.User) error {
-	return data.Db.Create(user).Error
+func (data *UserData) UserByUsername(username string) (*model.User, error) {
+	user := model.User{}
+	notFoundErr := data.Db.First(&user, "username = ?", username).Error
+	return &user, notFoundErr
 }
 
-func (data *CourseData) Courses(user *model.User) []model.Course {
-	var courses []model.Course
+func (data *UserData) UserIdByUsername(username string) (uint, error) {
+	user := model.User{}
+	notFoundErr := data.Db.Select("id").First(&user, "username = ?", username).Error
+	return user.ID, notFoundErr
+}
+
+func (data *CourseData) Courses(user *model.User) []*model.Course {
+	var courses []*model.Course
 	data.Db.Model(user).Association("Courses").Find(&courses)
 	return courses
 }
 
-func (data *CourseData) CoursesByUsername(username string) []model.Course {
-	var courses []model.Course
+func (data *CourseData) CoursesByUsername(username string) []*model.Course {
+	var courses []*model.Course
 	data.Db.Joins("INNER JOIN users ON users.id = courses.user_id").Where("users.username = ?", username).Find(&courses)
 	return courses
+}
+
+func (data *CourseData) CoursesCreate(courses []*model.Course) error {
+	data.Db.Create(&courses)
+	return nil
 }

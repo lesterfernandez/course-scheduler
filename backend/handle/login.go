@@ -39,6 +39,8 @@ func (s *Server) Login(w http.ResponseWriter, req *http.Request) {
 	}
 
 	courses := s.Course.Courses(user)
+	schedule := scheduleDto{}
+	schedule.fromCourses(courses)
 
 	token, _ := auth.CreateToken(user)
 
@@ -46,7 +48,7 @@ func (s *Server) Login(w http.ResponseWriter, req *http.Request) {
 	json.NewEncoder(w).Encode(
 		loginResponse{
 			authResponse{true, user.Username, token},
-			courses,
+			schedule.Courses,
 		})
 	fmt.Printf("Logged in user: %v\n", creds)
 }
@@ -72,12 +74,14 @@ func (s *Server) ImplicitLogin(w http.ResponseWriter, req *http.Request) {
 	}
 
 	courses := s.Course.Courses(user)
+	schedule := scheduleDto{}
+	schedule.fromCourses(courses)
 
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(
 		loginResponse{
 			authResponse{true, user.Username, token},
-			courses,
+			schedule.Courses,
 		})
 
 	fmt.Printf("Logged in user: %v\n", username)

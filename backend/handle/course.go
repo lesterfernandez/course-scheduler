@@ -10,7 +10,7 @@ import (
 )
 
 type schedule struct {
-	Courses []model.Course `json:"courses"`
+	Courses []*model.Course `json:"courses"`
 }
 
 func (s *Server) CoursesRoot(w http.ResponseWriter, r *http.Request) {
@@ -48,27 +48,40 @@ type courseDto struct {
 }
 
 type scheduleDto struct {
-	Courses []courseDto `json:"courses"`
+	Courses []*courseDto `json:"courses"`
 }
 
-func (s *scheduleDto) fromCourses(courses []*model.Course, uuidToPrereqs map[string][]string) {
-	s.Courses = make([]courseDto, 0, len(courses))
+func (s *scheduleDto) fromCourses(courses []*model.Course) {
+	uuidToPrereqs := make(map[string][]string, len(courses))
+
 	for _, course := range courses {
+		for _, prereq := range course.Prerequisites {
+			uuidToPrereqs[course.Uuid] = append(uuidToPrereqs[course.Uuid], prereq.Uuid)
+		}
+	}
+
+	s.Courses = make([]*courseDto, 0, len(courses))
+	for _, course := range courses {
+
+		prereqs := uuidToPrereqs[course.Uuid]
+		if prereqs == nil {
+			prereqs = make([]string, 0)
+		}
+
 		course := courseDto{
 			Uuid:          course.Uuid,
 			Letters:       course.Letters,
 			Number:        course.Number,
-			Status:        course.Status,
 			CourseIndex:   int(course.CourseIndex),
-			Prerequisites: uuidToPrereqs[course.Uuid],
+			Status:        course.Status,
+			Prerequisites: prereqs,
 		}
-		s.Courses = append(s.Courses, course)
+		s.Courses = append(s.Courses, &course)
 	}
 }
 
-func buildMaps(s *scheduleDto) (map[string]*model.Course, map[string][]string) {
+func buildMaps(s *scheduleDto) map[string]*model.Course {
 	courseMap := make(map[string]*model.Course, len(s.Courses))
-	uuidToPrereqs := make(map[string][]string)
 	for _, courseDto := range s.Courses {
 		course := model.Course{
 			Uuid:        courseDto.Uuid,
@@ -78,9 +91,8 @@ func buildMaps(s *scheduleDto) (map[string]*model.Course, map[string][]string) {
 			Status:      courseDto.Status,
 		}
 		courseMap[course.Uuid] = &course
-		uuidToPrereqs[courseDto.Uuid] = courseDto.Prerequisites
 	}
-	return courseMap, uuidToPrereqs
+	return courseMap
 }
 
 func initializeGraph(s *scheduleDto, courseMap map[string]*model.Course) (map[*model.Course][]*model.Course, []*model.Course, map[*model.Course]int) {
@@ -120,6 +132,13 @@ func sortCourses(adjList map[*model.Course][]*model.Course, available []*model.C
 }
 
 func (s *Server) CoursesPost(w http.ResponseWriter, r *http.Request) {
+	jwt, jwtParseErr := auth.ParseTokenFromRequest(r)
+	if jwtParseErr != nil {
+		respondWithError(w, "Not logged in!", 401)
+		return
+	}
+	username, _ := jwt.Claims.GetSubject()
+
 	submittedSchedule := scheduleDto{}
 	parseBodyErr := json.NewDecoder(r.Body).Decode(&submittedSchedule)
 	if parseBodyErr != nil {
@@ -128,7 +147,7 @@ func (s *Server) CoursesPost(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	courseMap, uuidToPrereqs := buildMaps(&submittedSchedule)
+	courseMap := buildMaps(&submittedSchedule)
 
 	for _, c := range submittedSchedule.Courses {
 		course := courseMap[c.Uuid]
@@ -147,7 +166,15 @@ func (s *Server) CoursesPost(w http.ResponseWriter, r *http.Request) {
 	}
 
 	res := scheduleDto{}
-	res.fromCourses(sortedCourses, uuidToPrereqs)
+	res.fromCourses(sortedCourses)
+
+	userId, _ := s.User.UserIdByUsername(username)
+
+	for _, course := range sortedCourses {
+		course.UserID = userId
+	}
+
+	s.Course.CoursesCreate(sortedCourses)
 
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(209)

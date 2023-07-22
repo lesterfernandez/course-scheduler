@@ -38,7 +38,7 @@ func TestLogin(t *testing.T) {
 	}
 
 	courseRepo := &testdata.CourseTestRepo{
-		CoursesMock: func(user *model.User) []model.Course { return make([]model.Course, 0) },
+		CoursesMock: func(user *model.User) []*model.Course { return make([]*model.Course, 0) },
 	}
 
 	mux := http.NewServeMux()

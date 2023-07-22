@@ -43,7 +43,6 @@ func setupDb() *gorm.DB {
 func setupCors() *cors.Cors {
 	c := cors.New(cors.Options{
 		AllowedHeaders: []string{"Authorization", "Content-Type"},
-		Debug:          true,
 	})
 	return c
 }
