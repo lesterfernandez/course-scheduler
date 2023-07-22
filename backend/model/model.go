@@ -6,7 +6,7 @@ type User struct {
 	ID                     uint
 	CreatedAt, UpdatedAt   time.Time
 	Username, PasswordHash string
-	Courses                []Course
+	Courses                []*Course
 }
 
 type Course struct {
@@ -14,7 +14,8 @@ type Course struct {
 	Uuid            string
 	Letters, Number string
 	CourseIndex     uint
-	Status          string
-	UserID          uint
 	// Status "AVAILABLE" | "COMPLETED" = "COMPLETED"
+	Status        string
+	UserID        uint
+	Prerequisites []*Course `gorm:"many2many:course_prereqs"`
 }
