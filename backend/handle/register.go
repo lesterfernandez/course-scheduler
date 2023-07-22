@@ -35,7 +35,7 @@ func (s *Server) Register(w http.ResponseWriter, req *http.Request) {
 		PasswordHash: string(passDigest),
 	}
 
-	s.User.CreateUser(&user)
+	s.User.UserCreate(&user)
 
 	token, _ := auth.CreateToken(&user)
 

@@ -6,7 +6,7 @@ import (
 )
 
 type UserRepo interface {
-	CreateUser(user *model.User) error
+	UserCreate(user *model.User) error
 	UserByUsername(username string) (*model.User, error)
 	UserExists(username string) bool
 }
@@ -35,7 +35,7 @@ func (data *UserData) UserExists(username string) bool {
 	return notFoundErr == nil
 }
 
-func (data *UserData) CreateUser(user *model.User) error {
+func (data *UserData) UserCreate(user *model.User) error {
 	return data.Db.Create(user).Error
 }
 

@@ -27,7 +27,7 @@ func TestLogin(t *testing.T) {
 	)
 
 	userRepo := &testdata.UserTestRepo{
-		CreateUserMock: func(user *model.User) error { return nil },
+		UserCreateMock: func(user *model.User) error { return nil },
 		UserByUsernameMock: func(username string) (*model.User, error) {
 			if username == user.Username {
 				return user, nil

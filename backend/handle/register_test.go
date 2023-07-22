@@ -17,7 +17,7 @@ import (
 func TestRegister(t *testing.T) {
 	t.Run("New user is created", func(t *testing.T) {
 		userRepo := &testdata.UserTestRepo{
-			CreateUserMock: func(user *model.User) error { return nil },
+			UserCreateMock: func(user *model.User) error { return nil },
 			UserByUsernameMock: func(username string) (*model.User, error) {
 				u := testdata.CreateTestUser()
 				u.Username = username
@@ -74,7 +74,7 @@ func TestRegister(t *testing.T) {
 
 	t.Run("Register with existing username", func(t *testing.T) {
 		userRepo := &testdata.UserTestRepo{
-			CreateUserMock: func(user *model.User) error { return nil },
+			UserCreateMock: func(user *model.User) error { return nil },
 			UserByUsernameMock: func(username string) (*model.User, error) {
 				u := testdata.CreateTestUser()
 				u.Username = username

@@ -3,13 +3,13 @@ package testdata
 import "github.com/lesterfernandez/course-scheduler/backend/model"
 
 type UserTestRepo struct {
-	CreateUserMock     func(user *model.User) error
+	UserCreateMock     func(user *model.User) error
 	UserByUsernameMock func(username string) (*model.User, error)
 	UserExistsMock     func(username string) bool
 }
 
-func (u *UserTestRepo) CreateUser(user *model.User) error {
-	return u.CreateUserMock(user)
+func (u *UserTestRepo) UserCreate(user *model.User) error {
+	return u.UserCreateMock(user)
 }
 
 func (u *UserTestRepo) UserByUsername(username string) (*model.User, error) {
