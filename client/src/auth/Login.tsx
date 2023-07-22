@@ -56,29 +56,34 @@ function Login() {
   };
 
   const onSubmit: SubmitHandler<LoginData> = async data => {
-    const response = await fetch(`${env.serverUrl}/api/auth/login`, {
-      method: "POST",
-      body: JSON.stringify(data),
-      headers: {
-        "Content-Type": "application/json",
-      },
-    });
+    try {
+      const response = await fetch(`${env.serverUrl}/api/auth/login`, {
+        method: "POST",
+        body: JSON.stringify(data),
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
 
-    const responseData = loginSchema.safeParse(await response.json());
-    if (!responseData.success || "errorMessage" in responseData.data) {
-      setServerError(
-        responseData.success && "errorMessage" in responseData.data
-          ? responseData.data.errorMessage
-          : "Something went wrong!"
-      );
-      return;
+      const responseData = loginSchema.safeParse(await response.json());
+      if (!responseData.success || "errorMessage" in responseData.data) {
+        setServerError(
+          responseData.success && "errorMessage" in responseData.data
+            ? responseData.data.errorMessage
+            : "Something went wrong!"
+        );
+        return;
+      }
+
+      const { loggedIn, token, username, courses } = responseData.data;
+      saveToken(token);
+      useAuthStore.setState({ loggedIn, username, token });
+      useScheduleStore.setState({ courses });
+      navigate("/");
+    } catch (e) {
+      setServerError("Something went wrong! Try again later.");
+      console.log(e);
     }
-
-    const { loggedIn, token, username, courses } = responseData.data;
-    saveToken(token);
-    useAuthStore.setState({ loggedIn, username, token });
-    useScheduleStore.setState({ courses });
-    navigate("/");
   };
 
   return (

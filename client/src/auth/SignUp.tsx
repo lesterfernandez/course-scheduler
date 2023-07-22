@@ -55,27 +55,32 @@ const SignUp = () => {
   };
 
   const onSubmit: SubmitHandler<SignUpData> = async data => {
-    const response = await fetch(`${env.serverUrl}/api/auth/register`, {
-      method: "POST",
-      body: JSON.stringify(data),
-      headers: {
-        "Content-Type": "application/json",
-      },
-    });
+    try {
+      const response = await fetch(`${env.serverUrl}/api/auth/register`, {
+        method: "POST",
+        body: JSON.stringify(data),
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
 
-    const responseData = signUpSchema.safeParse(await response.json());
-    if (!responseData.success || "errorMessage" in responseData.data) {
-      setServerError(
-        responseData.success && "errorMessage" in responseData.data
-          ? responseData.data.errorMessage
-          : "Something went wrong!"
-      );
-      return;
+      const responseData = signUpSchema.safeParse(await response.json());
+      if (!responseData.success || "errorMessage" in responseData.data) {
+        setServerError(
+          responseData.success && "errorMessage" in responseData.data
+            ? responseData.data.errorMessage
+            : "Something went wrong!"
+        );
+        return;
+      }
+
+      saveToken(responseData.data.token);
+      useAuthStore.setState(responseData.data);
+      navigate("/");
+    } catch (e) {
+      console.log(e);
+      setServerError("Something went wrong! Try again later.");
     }
-
-    saveToken(responseData.data.token);
-    useAuthStore.setState(responseData.data);
-    navigate("/");
   };
 
   return (
