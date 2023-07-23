@@ -12,17 +12,7 @@ type UserRepo interface {
 	UserIdByUsername(username string) (uint, error)
 }
 
-type CourseRepo interface {
-	Courses(user *model.User) []*model.Course
-	CoursesByUsername(username string) []*model.Course
-	CoursesCreate(courses []*model.Course) error
-}
-
 type UserData struct {
-	Db *gorm.DB
-}
-
-type CourseData struct {
 	Db *gorm.DB
 }
 
@@ -45,21 +35,4 @@ func (data *UserData) UserIdByUsername(username string) (uint, error) {
 	user := model.User{}
 	notFoundErr := data.Db.Select("id").First(&user, "username = ?", username).Error
 	return user.ID, notFoundErr
-}
-
-func (data *CourseData) Courses(user *model.User) []*model.Course {
-	var courses []*model.Course
-	data.Db.Model(user).Association("Courses").Find(&courses)
-	return courses
-}
-
-func (data *CourseData) CoursesByUsername(username string) []*model.Course {
-	var courses []*model.Course
-	data.Db.Joins("INNER JOIN users ON users.id = courses.user_id").Where("users.username = ?", username).Find(&courses)
-	return courses
-}
-
-func (data *CourseData) CoursesCreate(courses []*model.Course) error {
-	data.Db.Create(&courses)
-	return nil
 }

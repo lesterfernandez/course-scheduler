@@ -11,7 +11,7 @@ type User struct {
 
 type Course struct {
 	ID              uint
-	Uuid            string
+	Uuid            string `gorm:"unique"`
 	Letters, Number string
 	CourseIndex     uint
 	// Status "AVAILABLE" | "COMPLETED" = "COMPLETED"

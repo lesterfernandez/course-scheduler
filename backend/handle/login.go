@@ -38,7 +38,7 @@ func (s *Server) Login(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	courses := s.Course.Courses(user)
+	courses := s.Course.CoursesByUserId(user.ID)
 	schedule := scheduleDto{}
 	schedule.fromCourses(courses)
 
@@ -73,7 +73,7 @@ func (s *Server) ImplicitLogin(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	courses := s.Course.Courses(user)
+	courses := s.Course.CoursesByUserId(user.ID)
 	schedule := scheduleDto{}
 	schedule.fromCourses(courses)
 

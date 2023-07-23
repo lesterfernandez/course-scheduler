@@ -92,6 +92,13 @@ func buildMaps(s *scheduleDto) map[string]*model.Course {
 		}
 		courseMap[course.Uuid] = &course
 	}
+
+	for _, c := range s.Courses {
+		course := courseMap[c.Uuid]
+		for _, p := range c.Prerequisites {
+			course.Prerequisites = append(course.Prerequisites, courseMap[p])
+		}
+	}
 	return courseMap
 }
 
@@ -114,7 +121,6 @@ func initializeGraph(s *scheduleDto, courseMap map[string]*model.Course) (map[*m
 }
 
 func sortCourses(adjList map[*model.Course][]*model.Course, available []*model.Course, inDegree map[*model.Course]int, dst []*model.Course) []*model.Course {
-	fmt.Printf("------ %#v %[1]p \n", dst)
 	for i := uint(0); len(available) > 0; i++ {
 		current := available[0]
 		current.CourseIndex = i
@@ -149,13 +155,6 @@ func (s *Server) CoursesPost(w http.ResponseWriter, r *http.Request) {
 
 	courseMap := buildMaps(&submittedSchedule)
 
-	for _, c := range submittedSchedule.Courses {
-		course := courseMap[c.Uuid]
-		for _, p := range c.Prerequisites {
-			course.Prerequisites = append(course.Prerequisites, courseMap[p])
-		}
-	}
-
 	adjList, available, inDegree := initializeGraph(&submittedSchedule, courseMap)
 
 	sortedCourses := make([]*model.Course, 0, len(submittedSchedule.Courses))
@@ -169,12 +168,7 @@ func (s *Server) CoursesPost(w http.ResponseWriter, r *http.Request) {
 	res.fromCourses(sortedCourses)
 
 	userId, _ := s.User.UserIdByUsername(username)
-
-	for _, course := range sortedCourses {
-		course.UserID = userId
-	}
-
-	s.Course.CoursesCreate(sortedCourses)
+	s.Course.CoursesCreate(sortedCourses, userId)
 
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(209)

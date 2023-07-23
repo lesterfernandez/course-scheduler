@@ -26,19 +26,19 @@ func (u *UserTestRepo) UserIdByUsername(username string) (uint, error) {
 }
 
 type CourseTestRepo struct {
-	CoursesMock           func(user *model.User) []*model.Course
+	CoursesByUserIdMock   func(userId uint) []*model.Course
 	CoursesByUsernameMock func(username string) []*model.Course
-	CoursesCreateMock     func(courses []*model.Course) error
+	CoursesCreateMock     func(courses []*model.Course, userId uint) error
 }
 
-func (c *CourseTestRepo) Courses(user *model.User) []*model.Course {
-	return c.CoursesMock(user)
+func (c *CourseTestRepo) Courses(userId uint) []*model.Course {
+	return c.CoursesByUserIdMock(userId)
 }
 
 func (c *CourseTestRepo) CoursesByUsername(username string) []*model.Course {
 	return c.CoursesByUsernameMock(username)
 }
 
-func (c *CourseTestRepo) CoursesCreate(courses []*model.Course) error {
-	return c.CoursesCreateMock(courses)
+func (c *CourseTestRepo) CoursesCreate(courses []*model.Course, userId uint) error {
+	return c.CoursesCreateMock(courses, userId)
 }
