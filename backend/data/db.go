@@ -1,6 +1,7 @@
 package data
 
 import (
+	"log"
 	"os"
 
 	"github.com/lesterfernandez/course-scheduler/backend/model"
@@ -12,6 +13,7 @@ import (
 func SetupDb() *gorm.DB {
 	url := os.Getenv("DATABASE_URL")
 	if url == "" {
+		log.Println("Using fallback DATABASE_URL")
 		url = "postgresql://postgres:postgres@localhost:5001"
 	}
 
