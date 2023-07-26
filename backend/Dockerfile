@@ -1,11 +1,10 @@
-FROM golang:1.20
-
-WORKDIR /usr/src/app
-
+FROM golang:1.20-alpine
+WORKDIR /app
 COPY go.mod go.sum ./
 RUN go mod download && go mod verify
-
 COPY . .
-RUN go run build -v -o /usr/local/bin/app ./...
+RUN go build -v -o /app/ main.go
 
-CMD [ "app" ]
+FROM alpine
+COPY --from=0 /app/ /app/
+CMD [ "/app/main" ]
