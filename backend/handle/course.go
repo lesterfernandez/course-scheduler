@@ -15,9 +15,9 @@ type schedule struct {
 
 func (s *Server) CoursesRoot(w http.ResponseWriter, r *http.Request) {
 	if r.Method == http.MethodGet {
-		s.CoursesGet(w, r)
+		JwtFilter(s.CoursesGet)(w, r)
 	} else if r.Method == http.MethodPost {
-		s.CoursesPost(w, r)
+		JwtFilter(s.CoursesPost)(w, r)
 	}
 }
 
