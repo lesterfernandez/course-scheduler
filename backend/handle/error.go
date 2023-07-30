@@ -3,20 +3,7 @@ package handle
 import (
 	"encoding/json"
 	"net/http"
-
-	"github.com/lesterfernandez/course-scheduler/backend/data"
 )
-
-type Server struct {
-	User   data.UserRepo
-	Course data.CourseRepo
-}
-
-func ServerInit(s *Server, mux *http.ServeMux) {
-	mux.HandleFunc("/api/auth/register", s.Register)
-	mux.HandleFunc("/api/auth/login", s.LoginRoot)
-	mux.HandleFunc("/api/schedule", s.CoursesRoot)
-}
 
 type errorMsg struct {
 	ErrorMessage string `json:"errorMessage"`

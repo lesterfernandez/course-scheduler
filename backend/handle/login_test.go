@@ -46,7 +46,7 @@ func TestLogin(t *testing.T) {
 	}
 
 	mux := http.NewServeMux()
-	ServerInit(&Server{
+	SetupHandlers(&Server{
 		User:   userRepo,
 		Course: courseRepo,
 	}, mux)

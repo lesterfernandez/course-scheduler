@@ -27,7 +27,7 @@ func TestRegister(t *testing.T) {
 		}
 
 		mux := http.NewServeMux()
-		ServerInit(&Server{
+		SetupHandlers(&Server{
 			User: userRepo,
 		}, mux)
 
@@ -80,7 +80,7 @@ func TestRegister(t *testing.T) {
 			UserExistsMock: func(username string) bool { return true },
 		}
 		mux := http.NewServeMux()
-		ServerInit(&Server{
+		SetupHandlers(&Server{
 			User: userRepo,
 		}, mux)
 
