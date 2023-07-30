@@ -31,4 +31,8 @@ func TestToken(t *testing.T) {
 	if parseErr != nil {
 		t.Fatalf("Invalid token %v\n Error: %v\n", parsedToken, parseErr)
 	}
+
+	if username, err := parsedToken.Claims.GetSubject(); username != user.Username || err != nil {
+		t.Fatalf("Invalid token %v\n Error: %v\n", parsedToken, parseErr)
+	}
 }

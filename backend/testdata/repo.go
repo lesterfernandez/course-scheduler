@@ -42,3 +42,7 @@ func (c *CourseTestRepo) CoursesByUsername(username string) []*model.Course {
 func (c *CourseTestRepo) CoursesCreate(courses []*model.Course, userId uint) error {
 	return c.CoursesCreateMock(courses, userId)
 }
+
+func (c *CourseTestRepo) CoursesByUserId(userId uint) []*model.Course {
+	return c.CoursesByUserIdMock(userId)
+}

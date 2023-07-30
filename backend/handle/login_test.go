@@ -29,21 +29,30 @@ func TestLogin(t *testing.T) {
 	userRepo := &testdata.UserTestRepo{
 		UserCreateMock: func(user *model.User) error { return nil },
 		UserByUsernameMock: func(username string) (*model.User, error) {
-			if username == user.Username {
-				return user, nil
-			}
-			u := testdata.CreateTestUser()
-			return u, nil
+			return user, nil
+		},
+	}
+
+	courseRepo := &testdata.CourseTestRepo{
+		CoursesByUserIdMock: func(userId uint) []*model.Course {
+			return make([]*model.Course, 0)
+		},
+		CoursesByUsernameMock: func(username string) []*model.Course {
+			return make([]*model.Course, 0)
+		},
+		CoursesCreateMock: func(courses []*model.Course, userId uint) error {
+			return nil
 		},
 	}
 
 	mux := http.NewServeMux()
 	ServerInit(&Server{
-		User: userRepo,
+		User:   userRepo,
+		Course: courseRepo,
 	}, mux)
 
 	t.Run("Login attempt", func(t *testing.T) {
-		req := httptest.NewRequest(http.MethodPost, "/api/login", bytes.NewReader(reqBody))
+		req := httptest.NewRequest(http.MethodPost, "/api/auth/login", bytes.NewReader(reqBody))
 		w := httptest.NewRecorder()
 		mux.ServeHTTP(w, req)
 
@@ -56,7 +65,7 @@ func TestLogin(t *testing.T) {
 			t.Fatal("Could not parse response:", unmarshalErr)
 		}
 
-		if loginRes.Username != "Timmy" || !loginRes.LoggedIn {
+		if loginRes.Username != user.Username || !loginRes.LoggedIn {
 			t.FailNow()
 		}
 
@@ -84,7 +93,7 @@ func TestLogin(t *testing.T) {
 		}
 		token, _ := auth.CreateToken(&user)
 
-		req := httptest.NewRequest(http.MethodGet, "/api/login", bytes.NewReader(reqBody))
+		req := httptest.NewRequest(http.MethodGet, "/api/auth/login", bytes.NewReader(reqBody))
 		req.Header.Set("Authorization", "Bearer "+token)
 		w := httptest.NewRecorder()
 		mux.ServeHTTP(w, req)
@@ -98,7 +107,7 @@ func TestLogin(t *testing.T) {
 			t.Fatal("Could not parse response:", unmarshalErr)
 		}
 
-		if loginRes.Username != "Timmy" || !loginRes.LoggedIn {
+		if loginRes.Username != user.Username || !loginRes.LoggedIn {
 			t.FailNow()
 		}
 
