@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/lesterfernandez/course-scheduler/backend/auth"
+	"github.com/golang-jwt/jwt/v5"
 	"github.com/lesterfernandez/course-scheduler/backend/model"
 )
 
@@ -22,13 +22,13 @@ func (s *Server) CoursesRoot(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *Server) CoursesGet(w http.ResponseWriter, r *http.Request) {
-	jwt, jwtParseErr := auth.ParseTokenFromRequest(r)
-	if jwtParseErr != nil {
-		respondWithError(w, "Not logged in!", 401)
+	token, ok := r.Context().Value(AuthToken).(*jwt.Token)
+	if !ok {
+		respondWithError(w, "Not logged in!", http.StatusUnauthorized)
 		return
 	}
 
-	username, _ := jwt.Claims.GetSubject()
+	username, _ := token.Claims.GetSubject()
 
 	courses := s.Course.CoursesByUsername(username)
 	resBody := schedule{
@@ -138,18 +138,18 @@ func sortCourses(adjList map[*model.Course][]*model.Course, available []*model.C
 }
 
 func (s *Server) CoursesPost(w http.ResponseWriter, r *http.Request) {
-	jwt, jwtParseErr := auth.ParseTokenFromRequest(r)
-	if jwtParseErr != nil {
-		respondWithError(w, "Not logged in!", 401)
+	token, ok := r.Context().Value(AuthToken).(*jwt.Token)
+	if !ok {
+		respondWithError(w, "Not logged in!", http.StatusUnauthorized)
 		return
 	}
-	username, _ := jwt.Claims.GetSubject()
+	username, _ := token.Claims.GetSubject()
 
 	submittedSchedule := scheduleDto{}
 	parseBodyErr := json.NewDecoder(r.Body).Decode(&submittedSchedule)
 	if parseBodyErr != nil {
 		fmt.Println(parseBodyErr)
-		respondWithError(w, "Something went wrong!", 400)
+		respondWithError(w, "Something went wrong!", http.StatusBadRequest)
 		return
 	}
 
@@ -160,7 +160,7 @@ func (s *Server) CoursesPost(w http.ResponseWriter, r *http.Request) {
 	sortedCourses := make([]*model.Course, 0, len(submittedSchedule.Courses))
 	sortedCourses = sortCourses(adjList, available, inDegree, sortedCourses)
 	if len(sortedCourses) != len(submittedSchedule.Courses) {
-		respondWithError(w, "Prerequisite cycle detected!", 400)
+		respondWithError(w, "Prerequisite cycle detected!", http.StatusBadRequest)
 		return
 	}
 
@@ -171,6 +171,6 @@ func (s *Server) CoursesPost(w http.ResponseWriter, r *http.Request) {
 	s.Course.CoursesCreate(sortedCourses, userId)
 
 	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(209)
+	w.WriteHeader(http.StatusCreated)
 	json.NewEncoder(w).Encode(res)
 }

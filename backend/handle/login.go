@@ -22,19 +22,19 @@ func (s *Server) Login(w http.ResponseWriter, req *http.Request) {
 	decodeErr := json.NewDecoder(req.Body).Decode(&creds)
 
 	if decodeErr != nil || creds.Username == "" || creds.Password == "" {
-		respondWithError(w, "Invalid request!", 400)
+		respondWithError(w, "Invalid request!", http.StatusBadRequest)
 		return
 	}
 
 	user, notFoundErr := s.User.UserByUsername(creds.Username)
 	if notFoundErr != nil {
-		respondWithError(w, "Wrong username or password!", 401)
+		respondWithError(w, "Wrong username or password!", http.StatusUnauthorized)
 		return
 	}
 
 	wrongPasswordErr := bcrypt.CompareHashAndPassword([]byte(user.PasswordHash), []byte(creds.Password))
 	if wrongPasswordErr != nil {
-		respondWithError(w, "Wrong username or password!", 401)
+		respondWithError(w, "Wrong username or password!", http.StatusUnauthorized)
 		return
 	}
 
@@ -56,20 +56,20 @@ func (s *Server) Login(w http.ResponseWriter, req *http.Request) {
 func (s *Server) ImplicitLogin(w http.ResponseWriter, req *http.Request) {
 	token, tokenErr := auth.ParseAuthHeader(req)
 	if tokenErr != nil {
-		respondWithError(w, "Not logged in!", 401)
+		respondWithError(w, "Not logged in!", http.StatusUnauthorized)
 		return
 	}
 
 	parsedToken, parseErr := auth.ParseToken(token)
 	if parseErr != nil || !parsedToken.Valid {
-		respondWithError(w, "Not logged in!", 401)
+		respondWithError(w, "Not logged in!", http.StatusUnauthorized)
 		return
 	}
 
 	username, _ := parsedToken.Claims.GetSubject()
 	user, notFoundErr := s.User.UserByUsername(username)
 	if notFoundErr != nil {
-		respondWithError(w, "Not logged in!", 401)
+		respondWithError(w, "Not logged in!", http.StatusUnauthorized)
 		return
 	}
 
