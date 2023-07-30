@@ -37,12 +37,6 @@ func TestLogin(t *testing.T) {
 		CoursesByUserIdMock: func(userId uint) []*model.Course {
 			return make([]*model.Course, 0)
 		},
-		CoursesByUsernameMock: func(username string) []*model.Course {
-			return make([]*model.Course, 0)
-		},
-		CoursesCreateMock: func(courses []*model.Course, userId uint) error {
-			return nil
-		},
 	}
 
 	mux := http.NewServeMux()
@@ -52,7 +46,7 @@ func TestLogin(t *testing.T) {
 	}, mux)
 
 	t.Run("Login attempt", func(t *testing.T) {
-		req := httptest.NewRequest(http.MethodPost, "/api/auth/login", bytes.NewReader(reqBody))
+		req := httptest.NewRequest(http.MethodPost, RouteLogin, bytes.NewReader(reqBody))
 		w := httptest.NewRecorder()
 		mux.ServeHTTP(w, req)
 
@@ -93,7 +87,7 @@ func TestLogin(t *testing.T) {
 		}
 		token, _ := auth.CreateToken(&user)
 
-		req := httptest.NewRequest(http.MethodGet, "/api/auth/login", bytes.NewReader(reqBody))
+		req := httptest.NewRequest(http.MethodGet, RouteLogin, bytes.NewReader(reqBody))
 		req.Header.Set("Authorization", "Bearer "+token)
 		w := httptest.NewRecorder()
 		mux.ServeHTTP(w, req)

@@ -36,7 +36,7 @@ func TestRegister(t *testing.T) {
 			Password: "Password123",
 		}
 		reqBody, _ := json.Marshal(creds)
-		req := httptest.NewRequest(http.MethodGet, "/api/auth/register", bytes.NewReader(reqBody))
+		req := httptest.NewRequest(http.MethodGet, RouteRegister, bytes.NewReader(reqBody))
 		w := httptest.NewRecorder()
 		mux.ServeHTTP(w, req)
 
@@ -89,7 +89,7 @@ func TestRegister(t *testing.T) {
 			Password: "Password123",
 		})
 
-		req := httptest.NewRequest(http.MethodGet, "/api/auth/register", bytes.NewReader(reqBody))
+		req := httptest.NewRequest(http.MethodGet, RouteRegister, bytes.NewReader(reqBody))
 		w := httptest.NewRecorder()
 		mux.ServeHTTP(w, req)
 
