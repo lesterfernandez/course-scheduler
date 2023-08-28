@@ -1,7 +1,7 @@
 services:
   course-scheduler-db:
     image: postgres
-    restart: always
+    restart: on-failure
     environment:
       POSTGRES_PASSWORD: postgres
     ports:
